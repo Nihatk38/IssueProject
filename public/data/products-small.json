@@ -1,0 +1,11 @@
+{
+	"data": [
+		{"Id": "1000","FullName": "1","Email": "Bamboo Watch","Department": "Üretim","Role": "Admin"},
+		{"Id": "1000","FullName": "1","Email": "Bamboo Watch","Department": "Üretim","Role": "Admin"},
+		{"Id": "1100","FullName": "2","Email": "Bamboo Watch","Department": "kalite","Role": "Admin"},
+		{"Id": "1000","FullName": "1","Email": "Bamboo Watch","Department": "Üretim","Role": "Admin"},
+		{"Id": "1000","FullName": "1","Email": "Bamboo Watch","Department": "Üretim","Role": "Admin"},
+		{"Id": "1000","FullName": "1","Email": "Bamboo Watch","Department": "Üretim","Role": "Admin"}
+
+	]
+}

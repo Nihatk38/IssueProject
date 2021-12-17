@@ -1,0 +1,16 @@
+.layout-sidebar {
+  border-radius: 0 !important;
+  height: calc(100vh - 5rem);
+  left:0rem !important ;
+  top: 5rem;
+}
+.layout-main-container{
+  padding: 5.5rem 1rem 1rem 1rem;
+
+}
+.p-datatable .p-datatable-tbody > tr > td{
+  padding: 10px 5px;
+}
+.p-datatable .p-datatable-thead > tr > th{
+  padding: 10px 5px;
+}
