@@ -1,0 +1,65 @@
+.p-toast.p-toast-top-right {
+  z-index: 1000;
+  top: 7rem;
+}
+
+
+.Issue {
+  border-radius: 2px;
+  padding: 0.25rem 1rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: .3px;
+}
+
+.Issue.status-0 {
+  background-color: #efdf90;
+  color: #774f25;
+}
+
+.Issue.status-1 {
+  background-color: #c8e6c9;
+  color: #256029;
+}
+
+.Issue.status-2 {
+  background-color: #76c7b1;
+  color: #098066;
+}
+
+.Issue.status-3 {
+  background-color: #c4b9ec;
+  color: #2d2936;
+}
+
+.Issue.status-4 {
+  background-color: #d3cabf;
+  color: #2f2e29;
+}
+
+.Issue.status-6 {
+  background-color: #7ff18d;
+  color: #013f0b;
+}
+
+
+.Issue.status-9 {
+  background-color: #f1b0b7;
+  color: #ff0000;
+}
+
+.Issue.status-Kilitli {
+  background-color: #ffd8b2;
+  color: #805b36;
+}
+
+.cardColor1 {
+  background-color: #e7e7e7;
+}
+
+
+.cardColor2 {
+  background-color: #c9c9c9;
+}
+

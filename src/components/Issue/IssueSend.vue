@@ -1,44 +1,36 @@
 <template>
   <div>
 
-    <DataTable v-model:selection="selected" :scrollable="true" :value="sends" class="p-treetable-sm"
-               contextMenu dataKey="Id"
-               selection-mode="single" show-gridlines @rowContextmenu="onRowContextMenu">
+    <DataTable class="p-treetable-sm" :value="sends" dataKey="Id"
+               v-model:selection="selected" selection-mode="single"
+               v-model:filters="filters"
+               filterDisplay="menu"
+               :globalFiltersFields="['FullName','Department','Role','Status']"
+               responsiveLayout="scroll" contextMenu show-gridlines
+               :resizableColumns="true" columnResizeMode="fit"
+               @rowContextmenu="onRowContextMenu">
 
 
       <template #empty>
         Bir sonuç bulunamadı...
       </template>
 
-      <Column field="IssueId" header="Id">
+      <Column field="IssueId" header="Id" :style="{width:'100px'}">
         <template #body="{data}">
           {{ data.Id }}
         </template>
-
-      </Column>
-
-
-      <Column field="WorkArea" header="Üretim Yeri">
-        <template #body="{data}">
-          {{ data.WorkArea }}
+        <template #filter="{filterModel}">
+          <InputText type="text" v-model="filterModel.value" class="p-column-filter" placeholder="Search by name"/>
         </template>
       </Column>
 
-      <Column field="DepartmentName" header="Departman">
-        <template #body="{data}">
-          {{ data.DepartmentName }}
-        </template>
-      </Column>
-
-      <Column field="RoleName" header="Rol">
-        <template #body="{data}">
-          {{ data.RoleName }}
-        </template>
-      </Column>
 
       <Column field="FullName" header="Ad Soyad">
         <template #body="{data}">
           {{ data.FullName }}
+        </template>
+        <template #filter="{filterModel}">
+          <InputText type="text" v-model="filterModel.value" class="p-column-filter"/>
         </template>
       </Column>
 
@@ -46,12 +38,17 @@
         <template #body="{data}">
           {{ data.Title }}
         </template>
-
+        <template #filter="{filterModel}">
+          <InputText type="text" v-model="filterModel.value" class="p-column-filter"/>
+        </template>
       </Column>
 
-      <Column :filterMenuStyle="{'width':'5rem'}" field="status" header="Status" style="min-width:5rem">
+      <Column field="Durum" header="Durum" :style="{width:'250px'}">
         <template #body="{data}">
-          <span :class="'Issue status-' + data.status" class="ml-3">{{ data.status }}</span>
+          <span :class="'Issue status-' + data.status" class="ml-3">{{ data.statusText }}</span>
+        </template>
+        <template #filter="{filterModel}">
+          <InputText type="text" v-model="filterModel.value"/>
         </template>
       </Column>
 
@@ -70,36 +67,42 @@
 
 
 <script>
-import {onMounted, ref, computed, watch} from "vue";
-import {useToast} from "primevue/usetoast";
-import IssuesService from "../../service/issueService";
-import router from "../../router";
-import {useConfirm} from "primevue/useconfirm";
+import {onMounted, ref, computed} from "vue";
+import router from "@/router";
+
+import {FilterMatchMode, FilterOperator} from "primevue/api";
+
+import IssuesService from "@/service/issueService";
+
+import Functions from "@/auxiliary/directive/functions";
 
 
 export default {
   setup() {
-    onMounted(async () => {
-      await getIssues()
-    })
-    const rejectİnfo = ref(null)
+    const rejectInfo = ref(null)
     const sends = ref(null)
     const cm = ref()
     const selected = ref(null)
-    const selectedIssue = ref()
-    const toast = useToast()
-    const confirm = useConfirm()
-    const rejectShow = ref(false)
-    const showIssue = ref(false)
     const openRejectDialog = ref(false)
-    const confirmModel = ref({
-      IssueId: '',
-      Description: ''
+    const confirmContext = ref(false)
+
+    const filters = ref({
+      'global': {value: null, matchMode: FilterMatchMode.CONTAINS},
+      'FullName': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
+      'WorkArea': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
+      'status': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
+      'DepartmentName': {
+        operator: FilterOperator.AND,
+        constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]
+      },
+      'RoleName': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
     })
+
     const getIssues = () => {
       IssuesService.getIssueListPrivate().then(response => {
         if (!response.Success)
           return
+
         sends.value = response.Payload
             .map((data) => {
               return {
@@ -109,44 +112,18 @@ export default {
                 RoleName: data.RoleName,
                 FullName: data.FullName,
                 DepartmentId: data.DepartmentId,
-                status: statusControl(data.Status),
+                status: data.Status,
+                statusText: Functions.statusControl(data.Status),
                 Title: data.Title
-
               }
             })
       })
     }
 
-
-    const statusControl = (status) => {
-      if (status === 0) {
-        return "calisiyor";
-      } else if (status === 1) {
-        return "BimOnayBekleme";
-      } else if (status === 2) {
-        return "BimOnay";
-      } else if (status === 3) {
-        return "DepartmanOnay";
-      } else if (status === 4) {
-        return "YazanAmirOnay";
-      } else if (status === 5) {
-        return "Kilitli";
-      } else if (status === 6) {
-        rejectShow.value = true;
-        return "RedYapilmayacak";
-      } else {
-        return "Onaylandi"
-      }
-    }
-    /*  if(selected.value.status==="calisiyor"){
-        showIssue.value=true
-      }
-  */
-    const confirmContext = ref(false)
-
     if (selected.value !== null) {
       confirmContext.value = true
     }
+
     const menuModel = ref([
       {
         label: "İncele",
@@ -157,40 +134,27 @@ export default {
         }
       },
       {
-        label: "Red Sebebi",
-        visible: computed(() => rejectShow.value),
-        command: () => {
-          rejectInfo()
-        }
-
+        separator: true,
+        visible: computed(() => selected.value === 9),
       },
       {
-        label: "Direkt Kaydet",
-        icon: "pi pi-save",
-        disabled: confirmContext,
+        label: "Red Sebebi",
+        visible: computed(() => selected.value === 9),
         command: () => {
-          answerIssue()
+          showRejectInfo()
         }
-      },
+
+      }
     ])
-    const rejectInfo = () => {
+
+    const showRejectInfo = () => {
       openRejectDialog.value = true
       IssuesService.getRejectInfo(selected.value.Id).then(response => {
-        rejectİnfo.value = response.data.Payload
+        rejectInfo.value = response.data.Payload
       })
 
     }
-    watch(() => selected.value, (value) => {
-      console.log("value.status", value.status)
-      if (value.status == "RedYapilmayacak") {
-        rejectShow.value = true;
-        console.log("rejectvaluees", rejectShow.value)
-      } else {
-        rejectShow.value = false;
-        console.log("rejectvaluees", rejectShow.value)
-      }
 
-    })
     const viewIssue = () => {
       router.push({
         name: 'issueCreate',
@@ -198,45 +162,25 @@ export default {
         params: {data: selected.value.Id, status: selected.value.status}
       })
     }
+
     const onRowContextMenu = (event) => {
       cm.value.show(event.originalEvent);
     };
-    const answerIssue = () => {
-      confirmModel.value.IssueId = selected.value.Id;
-      confirm.require({
-        message: "Projeyi onaylamak istediğinizden emin misiniz?",
-        header: "Onay Ver",
-        icon: "pi pi- exclamation-triangle",
-        accept: () => {
-          IssuesService.IssueConfirm(confirmModel.value).then(response => {
-            if (response.Success) {
-              toast.add({severity: 'success', summary: 'Onaylandı', detail: 'Başarılı', life: 3000});
-              selected.value.status = "BimOnayBekleme"
-            }
-          })
-        },
-        reject: () => {
-          toast.add({severity: 'warn', summary: 'Onaylanamadı', detail: 'Başarısız', life: 3000});
-        }
-      })
-    }
+
+    onMounted(async () => {
+      await getIssues()
+    });
+
     return {
       sends,
       selected,
-      selectedIssue,
-      onRowContextMenu,
-      toast,
       menuModel,
-      rejectİnfo,
-      viewIssue,
+      rejectInfo,
+      filters,
       cm,
-      statusControl,
-      answerIssue,
-      confirmModel,
-      rejectShow,
-      showIssue,
       openRejectDialog,
-      rejectInfo
+
+      onRowContextMenu,
     }
   }
 }
