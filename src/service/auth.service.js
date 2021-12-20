@@ -4,7 +4,6 @@ import apiService from "@/service/apiService";
 const AuthService = {
     loginPost(user) {
         return apiService
-
             .post(`/api/Auth/login`, {
                 UserId: user.UserId,
                 Password: user.Password,
@@ -12,9 +11,7 @@ const AuthService = {
 
             })
             .then(response => {
-                console.log("asd", response);
                 if (response.data.Success) {
-                    console.log(response.data);
                     localStorage.setItem('token', JSON.stringify(response.data.Payload));
                 }
 
@@ -38,6 +35,8 @@ const AuthService = {
     },
     getToken() {
         let token = JSON.parse(localStorage.getItem('token'));
+
+        console.log(token);
 
         if (token) {
             return token.AccessToken;
