@@ -3,13 +3,12 @@ import apiService from "@/service/apiService";
 
 const AuthService = {
     loginPost(user) {
-        console.log("asdasdas",user)
         return apiService
 
             .post(`/api/Auth/login`, {
                 UserId: user.UserId,
                 Password: user.Password,
-                GrantType:"password"
+                GrantType: "password"
 
             })
             .then(response => {
@@ -28,7 +27,7 @@ const AuthService = {
         let token = JSON.parse(localStorage.getItem('token'));
         return token;
     },
-    getUserId(){
+    getUserId() {
         let token = JSON.parse(localStorage.getItem('token'));
         if (token) {
 
