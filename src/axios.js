@@ -1,18 +1,17 @@
 import axios from "axios";
-import router from "../router";
-import AuthService from "./auth.service";
+import router from "./router";
+import AuthService from "./service/auth.service";
 
 
 export default (apiName = "") => {
-    let headers= {
-            "Content-Type": "application/json",
-        "Grant-type": "password"
+    let headers = {
+        "Content-Type": "application/json"
     };
 
-    let accessToken = localStorage.getItem("user.accessToken") || "";
+    let token = JSON.parse(localStorage.getItem("token") || "{}");
 
-    if (accessToken && accessToken !== "") {
-        headers.Authorization = `Bearer ${accessToken}`;
+    if (token && token !== "") {
+        headers.Authorization = `Bearer ${token.AccessToken}`;
     }
 
     const instance = axios.create({
@@ -37,10 +36,10 @@ export default (apiName = "") => {
             }
 
             // Logout user if token refresh didn't work or user is disabled
-            if (error.config.url === "/admin/user/login" && !error.response.Success) {
+            if (error.config.url === "/login" && !error.response.Success) {
                 console.log(" Refresh operation error ");
                 AuthService.clearTokens();
-                router.push({ name: "Login" });
+                router.push({name: "Login"});
 
                 return new Promise((resolve, reject) => {
                     reject(error);

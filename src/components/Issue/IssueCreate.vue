@@ -12,10 +12,10 @@
   ></precondition>
 
 
-  <stream-list
+  <activity-list
       :IssueActivityInfos="IssueInfo.IssueActivitiyInfos"
       :status="status"
-  ></stream-list>
+  ></activity-list>
 
   <notes
       :note-list="IssueInfo.IssueNoteInfos"
@@ -64,21 +64,25 @@
 <script>
 
 import {ref} from "vue";
+import {useToast} from "primevue/usetoast";
+import {useConfirm} from "primevue/useconfirm";
+
+import useVuelidate from "@vuelidate/core";
+import {required} from "@vuelidate/validators";
+
+import router from "@/router";
+
+import ActivityList from "@/components/Issue/IssueCreate/ActivityList";
 import ScenarioInformation from "./IssueCreate/ScenarioInformation";
 import RelevantDepartments from "./IssueCreate/RelevantDepartments";
 import Precondition from "./IssueCreate/Precondition";
 import Notes from "./IssueCreate/Notes";
-import useVuelidate from "@vuelidate/core";
-import {required} from "@vuelidate/validators";
-import StreamList from "./IssueCreate/ActivityList";
+
 import IssuesService from "@/service/issueService";
-import {useToast} from "primevue/usetoast";
-import {useConfirm} from "primevue/useconfirm";
-import router from "@/router";
 
 export default {
   props: ['data', 'status'],
-  components: {Precondition, RelevantDepartments, ScenarioInformation, Notes, StreamList},
+  components: {ActivityList, Precondition, RelevantDepartments, ScenarioInformation, Notes},
   setup(props) {
     const newDescription = ref('')
     const confirmModel = ref({
