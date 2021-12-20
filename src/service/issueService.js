@@ -1,26 +1,26 @@
-import apiService from "./apiService";
+import client from "@/axios";
 
 const IssuesService = {
     addIssue(issue) {
-        return apiService.post(`api/issue/add`, issue)
+        return client().post(`api/issue/add`, issue)
     },
 
     getIssueListPrivate() {
-        return apiService.get(`/api/issue/privateIssueList`).then(r => {
+        return client().get(`/api/issue/privateIssueList`).then(r => {
             return r.data
         }).catch(e => {
             console.log(e)
         })
     },
     getIssueListPublic() {
-        return apiService.get(`/api/issue/ComeToMeIssues`).then(r => {
+        return client().get(`/api/issue/ComeToMeIssues`).then(r => {
             return r.data
         }).catch(e => {
             console.log(e)
         })
     },
     IssueConfirm(confirmModel) {
-        return apiService.post(`/api/issue/confirm`, confirmModel).then(r => {
+        return client().post(`/api/issue/confirm`, confirmModel).then(r => {
             return r.data
         }).catch(e => {
             console.log(e)
@@ -28,17 +28,17 @@ const IssuesService = {
 
     },
     rejectIssue(confirmModel) {
-        return apiService.post(`/api/issue/reject`, confirmModel).then(r => {
+        return client().post(`/api/issue/reject`, confirmModel).then(r => {
             return r.data
         }).catch(e => {
             console.log(e)
         })
     },
     getSelectedIssue(Id) {
-        return apiService.get(`/api/Issue/IssueInfo/${Id}`)
+        return client().get(`/api/Issue/IssueInfo/${Id}`)
     },
     getRejectInfo(Id) {
-        return apiService.get(`/api/Issue/RejectReason/${Id}`)
+        return client().get(`/api/Issue/RejectReason/${Id}`)
     }
 
 
