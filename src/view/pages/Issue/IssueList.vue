@@ -1,9 +1,14 @@
 <template>
   <div>
     <div class="card">
-      <h5>Konu Listesi</h5>
-      <Button label="Yeni Konu Oluştur" class="p-button-success p-button-outlined mb-2" icon="pi pi-plus"
-              @click="newIssue"></Button>
+      <div class="p-card-title flex justify-content-between">
+        <h5>Konu Listesi</h5>
+        <Button label="Yeni Konu Oluştur" class="p-button-success p-button-outlined align-self-end"
+                icon="pi pi-plus"
+                @click="newIssue"></Button>
+      </div>
+
+
       <TabView ref="tabview1">
         <TabPanel header="Bana Gelenler">
           <issue-incoming></issue-incoming>
