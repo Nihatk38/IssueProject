@@ -4,7 +4,7 @@
     <div class="p-card-title relative">
       <h5 class="text-center mb-4">ÖN KOŞUL BİLGİLERİ</h5>
       <Button class="p-button-text absolute top-0 left-0" icon="pi pi-plus" type="button" @click="openPrecondition "
-              label="Ön Koşul Ekle"/>
+              label="Ön Koşul Ekle" :disabled="status >0"/>
     </div>
 
 
@@ -64,6 +64,9 @@ export default {
     preconditionList: {
       type: Array,
       default: () => []
+    },
+    status:{
+      type:Number
     }
   },
   setup(props) {
@@ -88,6 +91,8 @@ export default {
     ])
 
     const onRowContextMenu = (event) => {
+      if(props.status >0)
+        return
       cm.value.show(event.originalEvent);
     };
 

@@ -55,9 +55,10 @@
     </DataTable>
     <ContextMenu ref="cm" :model="menuModel" suppressContextMenu:true/>
 
-    <Dialog v-model:visible="openRejectDialog">
-      <div>
-        <p>{{ rejectInfo.title }}</p>
+    <Dialog v-model:visible="openRejectDialog" :modal="true" :style="{width:'800px', }" class="p-fluid"
+            header="Red Sebebi" >
+      <div class="p-field">
+        <Textarea style="text-align: center" :disabled="true" v-model="rejectInfo"></Textarea>
       </div>
 
     </Dialog>
@@ -67,7 +68,7 @@
 
 
 <script>
-import {onMounted, ref, computed} from "vue";
+import {onMounted, ref, computed,watch} from "vue";
 import router from "@/router";
 
 import {FilterMatchMode, FilterOperator} from "primevue/api";
@@ -80,6 +81,7 @@ import Functions from "@/auxiliary/directive/functions";
 export default {
   setup() {
     const rejectInfo = ref(null)
+    const rejectShow = ref(false)
     const sends = ref(null)
     const cm = ref()
     const selected = ref(null)
@@ -126,20 +128,21 @@ export default {
 
     const menuModel = ref([
       {
-        label: "İncele",
-        icon: "pi pi-eye",
+        label: computed(() => rejectShow.value==true?'Yeni Revizyon Oluştur':'İncele'),
+        icon: computed(() => rejectShow.value==true?'pi pi-plus':'pi pi-eye'),
 
         command: () => {
           viewIssue()
         }
       },
+
       {
         separator: true,
         visible: computed(() => selected.value === 9),
       },
       {
         label: "Red Sebebi",
-        visible: computed(() => selected.value === 9),
+        visible: computed(() => rejectShow.value),
         command: () => {
           showRejectInfo()
         }
@@ -150,7 +153,7 @@ export default {
     const showRejectInfo = () => {
       openRejectDialog.value = true
       IssuesService.getRejectInfo(selected.value.Id).then(response => {
-        rejectInfo.value = response.data.Payload
+        rejectInfo.value = response.data.Payload.Description
       })
 
     }
@@ -162,7 +165,14 @@ export default {
         params: {data: selected.value.Id, status: selected.value.status}
       })
     }
+    watch(() => selected.value, (value) => {
+      if (value.status == 9) {
+        rejectShow.value = true;
+      } else {
+        rejectShow.value = false;
+      }
 
+    })
     const onRowContextMenu = (event) => {
       cm.value.show(event.originalEvent);
     };
@@ -179,7 +189,7 @@ export default {
       filters,
       cm,
       openRejectDialog,
-
+      rejectShow,
       onRowContextMenu,
     }
   }

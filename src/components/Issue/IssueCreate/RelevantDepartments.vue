@@ -5,11 +5,12 @@
   </template>
   <template #content>
     <div>
+      <div  v-if="(v$.DepartmentId.$invalid && submitted  )" class="p-error mb-2">İlgili Departman Bilgisi Boş Bırakılamaz.</div>
       </div>
       <div class="grid">
         <div v-for="category of categoriesDepartment" :key="category.Definition" class="col-4 p-field-checkbox">
           <Checkbox :id="category.Definition" name="category" :value="category"
-                    v-model="departmentValue.DepartmentId"/>
+                    v-model="departmentValue.DepartmentId" :disabled="status >0"/>
           <label :for="category.key"> {{category.Definition}}</label>
         </div>
 
@@ -25,20 +26,28 @@
 <script>
 import {onMounted, ref, toRefs} from "vue";
 import UsersService from "../../../service/users.service";
+import useVuelidate from "@vuelidate/core";
+import {required} from "@vuelidate/validators";
 export default {
-  props:['departments'],
+  props:['departments', 'status', 'submitted'],
+
   setup(props){
     onMounted(()=>{
       UsersService.getDepartment().then(response =>{
         categoriesDepartment.value=response.Payload
       })
     })
+    const rules ={
+      DepartmentId:{required}
+    }
+
+
     const selectedCategoriesDepartment=ref()
     const {departments}=toRefs(props)
     const categoriesDepartment=ref([ ])
-
+    const v$ = useVuelidate(rules,departments)
     return{
-      selectedCategoriesDepartment,categoriesDepartment,departmentValue:departments,
+      selectedCategoriesDepartment,categoriesDepartment,departmentValue:departments,v$
     }
   }
 }

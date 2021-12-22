@@ -45,30 +45,30 @@
 
 
   <Dialog v-model:visible="createNoteDialog" :modal="true" :style="{width: '800px'}" :visible="true"
-          class="p-fluid" header="Yeni Not Oluştur">
+          class="p-fluid" header="Yeni Akış Oluştur">
 
     <div class="p-field">
       <label for="Definition">Tanım</label>
       <Textarea id="Definition" v-model="activity.Definition" :auto-resize="true" maxLength="2000"/>
-
+      <small v-if="(v$.Definition.$invalid && submitted)" class="p-error">Tanım Boş Bırakılamaz.</small>
     </div>
 
     <div class="p-field">
       <label for="RoleId">Rol</label>
       <Dropdown v-model="activity.RoleId" :options="resultRoles" optionLabel="Definition" optionValue="Id"/>
-
+      <small v-if="(v$.RoleId.$invalid && submitted)" class="p-error">Rol Boş Bırakılamaz.</small>
     </div>
 
     <div class="p-field">
       <label for="Medium">Ortam</label>
       <InputText id="Precondition" v-model="activity.Medium" :auto-resize="true"/>
-
+      <small v-if="(v$.Medium.$invalid && submitted)" class="p-error">Ortam Bilgisi Boş Bırakılamaz.</small>
     </div>
 
     <div class="p-field">
       <label for="Explanation">Açıklama</label>
       <Textarea id="Definition" v-model="activity.Explanation" :auto-resize="true" maxLength="2000"/>
-
+      <small v-if="(v$.Explanation.$invalid && submitted)" class="p-error">Açıklama Bırakılamaz.</small>
     </div>
 
 
@@ -83,6 +83,8 @@
 <script>
 import {computed, onMounted, ref, watch} from "vue";
 import UsersService from "@/service/users.service";
+import {required} from "@vuelidate/validators";
+import useVuelidate from "@vuelidate/core";
 
 export default {
   props: {
@@ -93,9 +95,13 @@ export default {
     IssueActivityDetailInfos: {
       type: Array,
       default: () => []
-    }
-  },
+    },
+    status:{
+      type:Number
+    },
 
+  },
+  emits:['submitted'],
   setup(props, {emit}) {
 
     const nodes = ref([])
@@ -107,8 +113,14 @@ export default {
     const resultRoles = ref([])
     const childIndex = ref(0);
     const keyIndex = ref(0)
+    const submitted=ref(false)
     const cm = ref()
-
+    const rules = {
+      Definition: {required},
+      RoleId: {required},
+      Medium: {required},
+      Explanation: {required},
+    }
     let nodeList = [];
     let nodeIndex = 0;
 
@@ -166,12 +178,13 @@ export default {
         icon: "pi pi-plus",
         command: () => {
           addDetail(null)
-        }
+        },
+        disabled: props.status>0
       },
       {
         label: "Alt Detay Ekle",
         icon: "pi pi-plus",
-        disabled: computed(() => selectedNode.value == null),
+        disabled: computed(() => selectedNode.value == null  ),
         command: () => {
           addDetail(selectedNode.value)
         }
@@ -254,7 +267,10 @@ export default {
     }
 
     const addNode = () => {
-
+      submitted.value=true;
+      if(!v$.value.$error){
+        submitted.value=false
+        emit('submitted',true)
       if (parentNode.value) {
         let detailsInfo = [...props.IssueActivityDetailInfos];
 
@@ -294,10 +310,14 @@ export default {
 
       createNoteDialog.value = false
       activity.value = {};
+      }else
+        emit('submitted',false)
     }
 
 
     const onRowContextMenu = (event) => {
+      if(props.status >0)
+        return
       cm.value.show(event)
     }
     const onNodeSelect = (node) => {
@@ -313,11 +333,11 @@ export default {
             resultRoles.value = response.Payload
           })
     });
-
+    const v$ = useVuelidate(rules, activity.value)
     return {
       createNoteDialog, createNote, activity, indexNum, nodes,
       saveNotes: addNode, keyIndex, addDetail, childIndex, resultRoles, deleteNote: deleteNode, cm, menuModel,
-      onRowContextMenu, onNodeSelect, onNodeUnselect
+      onRowContextMenu, onNodeSelect, onNodeUnselect,rules,v$,submitted
     }
   }
 }

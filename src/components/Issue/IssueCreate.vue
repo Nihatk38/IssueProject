@@ -1,4 +1,5 @@
 <template>
+  <Dropdown v-if="status==='9'" v-model="versionInfo" :options="resultVersion" optionValue="Id" optionLabel="VersionNo" placeholder="Önceki Revizyonları İncele"/>
 
   <scenario-information
       :scenarios="IssueInfo"
@@ -15,6 +16,7 @@
   <activity-list
       :IssueActivityInfos="IssueInfo.IssueActivitiyInfos"
       :status="status"
+      :submitted="submitted"
   ></activity-list>
 
   <notes
@@ -25,10 +27,12 @@
   <relevant-departments
       :departments="IssueInfo.IssueRelevantDepartmentInfos"
       :status="status"
+      :submitted="submitted"
   ></relevant-departments>
 
   <div class="card cardColor1">
-    <FileUpload :maxFileSize="1000000" :multiple="true" :url="'http://10.0.0.206:12/api/Issue/upload'"
+    <FileUpload :disabled="status>0" :maxFileSize="1000000" :multiple="true"
+                :url="rootPath+'/api/Issue/upload'"
                 accept="image/*" name="IssueAttachmentInfos[]" @upload="onUpload"
                 class="p-button-text">
       <template #empty>
@@ -63,7 +67,7 @@
 
 <script>
 
-import {ref} from "vue";
+import {computed, ref, watch} from "vue";
 import {useToast} from "primevue/usetoast";
 import {useConfirm} from "primevue/useconfirm";
 
@@ -85,6 +89,7 @@ export default {
   components: {ActivityList, Precondition, RelevantDepartments, ScenarioInformation, Notes},
   setup(props) {
     const newDescription = ref('')
+
     const confirmModel = ref({
       IssueId: '',
       Description: ''
@@ -95,11 +100,16 @@ export default {
     const IssueFile = ref(null)
     const urlUpload = ref('')
     const showButton = ref(false)
+    const versionInfo=ref('');
+    const resultVersion=ref({});
     const rules = {
       IssueInfo: {required}
     }
     const toast = useToast()
     const confirm = useConfirm()
+    const rootPath = computed(() => {
+      return process.env.VUE_APP_API_URL
+    })
 
     const ResetValue = () => {
       IssueInfo.value = {
@@ -113,17 +123,28 @@ export default {
       }
     }
     ResetValue();
-
+    IssuesService.getVersionInfo(props.data).then( response => {
+      resultVersion.value = response.data.Payload
+    })
 
     const v$ = useVuelidate(rules, IssueInfo.value)
 
 
     const onUpload = (e) => {
-      IssueInfo.value.IssueAttachmentInfos = e.files.map((f) => {
-        return {
-          FileName: f.name,
-        }
-      })
+      console.log("eerere",e.xhr.responseText)
+      if(e.xhr.responseText == "MUKERRERKAYIT")
+        toast.add({severity: 'info', summary: 'Başarısız', detail: 'Bu Dosya isminden Daha Önceden Kayıt Tespit Edildi.Lütfen Başka Bir Dosya Ekleyin Veya Dosya İsmini Değiştirin!', life: 5000});
+      else if (e.xhr.responseText == "ONAY"){
+        toast.add({severity: 'success', summary: 'Başarılı', detail: 'Dosya Eklendi', life: 3000});
+        IssueInfo.value.IssueAttachmentInfos = e.files.map((f) => {
+          return {
+            FileName: f.name,
+          }
+        })
+      }else if(e.xhr.responseText == "BASARISIZ"){
+        toast.add({severity: 'error', summary: 'Başarısız', detail: 'Dosya Yüklenemedi Lütfen Yüklemek İstediğiniz Dosyayı Kontrol Edin! ', life: 5000});
+      }
+
     }
 
     const saveAndConfirm = () => {
@@ -135,6 +156,7 @@ export default {
       submitted.value = true;
       v$.value.$validate()
       if (v$.value.$error) {
+        window.scrollTo(0, 0);
         IssueInfo.value.IssueRelevantDepartmentInfos = IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId.map((m) => {
           return {
             DepartmentId: m.Id
@@ -170,6 +192,12 @@ export default {
 
           IssueInfo.value = response.data.Payload
 
+           IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId = response.data.Payload.IssueRelevantDepartmentInfos.map(f => {
+             return {
+               Definition: f.Department.Definition,
+               Id: f.DepartmentId
+             }
+           })
           IssueInfo.value.IssueRoleInfos = response.data.Payload.IssueRoleInfos.map(f => {
             return {
               Id: f.Role.Id,
@@ -180,7 +208,29 @@ export default {
           ResetValue();
       })
     }
+    watch(()=>versionInfo.value,(value)=>{
+      console.log("selected version",value)
+      IssuesService.getSelectedIssue(value).then(response => {
+        if (response.data.Success) {
+          console.log("response.data.Payload", response.data)
+          IssueInfo.value = response.data.Payload
 
+          IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId = response.data.Payload.IssueRelevantDepartmentInfos.map(f => {
+            return {
+              Definition: f.Department.Definition,
+              Id: f.DepartmentId
+            }
+          })
+          IssueInfo.value.IssueRoleInfos = response.data.Payload.IssueRoleInfos.map(f => {
+            return {
+              Id: f.Role.Id,
+              Definition: f.Role.Definition
+            }
+          })
+        } else
+          ResetValue();
+      })
+    })
     const rejectIssue = () => {
       openRejectDialog.value = true
     }
@@ -239,6 +289,7 @@ export default {
       IssueInfo,
       v$,
       save,
+      rootPath,
       urlUpload,
       onUpload,
       IssueFile,
@@ -251,6 +302,8 @@ export default {
       closeDialog,
       confirmModel,
       newDescription,
+      versionInfo,
+      resultVersion,
       saveAndConfirm
     }
   }

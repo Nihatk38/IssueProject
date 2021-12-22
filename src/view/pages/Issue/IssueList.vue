@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div >
     <div class="card">
       <div class="p-card-title flex justify-content-between">
         <h5>Konu Listesi</h5>
@@ -11,10 +11,10 @@
 
       <TabView ref="tabview1">
         <TabPanel header="Bana Gelenler">
-          <issue-incoming></issue-incoming>
+          <issue-incoming :key="renderComponent" ></issue-incoming>
         </TabPanel>
         <TabPanel header="Benim Yazdıklarım">
-          <issue-send></issue-send>
+          <issue-send :key="renderComponent"  ></issue-send>
         </TabPanel>
       </TabView>
     </div>
@@ -22,20 +22,35 @@
 
 </template>
 
-<script>
+<script >
 
 import IssueSend from "../../../components/Issue/IssueSend";
 import IssueIncoming from "../../../components/Issue/IssueIncoming";
 import {useToast} from "primevue/usetoast";
 import router from "../../../router";
+import {ref, onMounted} from "vue";
 
 export default {
   components: {IssueIncoming, IssueSend},
+
   setup() {
+    onMounted(()=>{
+      renderComponent.value+=1
+    })
     const toast = useToast()
+
+    const reRender=ref(false);
+
+    const renderComponent=ref(0)
+
+    console.log("render",renderComponent.value)
+   // root.$nextTick(() => {renderComponent.value = true;});
+
+
     const newIssue = () => {
       router.push("/issueCreate")
     }
+
     const logOut = () => {
       localStorage.removeItem('token');
       router.push("/login")
@@ -44,7 +59,7 @@ export default {
     }
 
     return {
-      logOut, newIssue
+      logOut, newIssue,renderComponent,reRender
 
 
     }

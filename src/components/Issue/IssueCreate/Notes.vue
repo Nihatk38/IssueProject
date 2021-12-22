@@ -4,7 +4,7 @@
     <div class="p-card-title relative">
       <h5 class="text-center mb-4">NOTLAR</h5>
       <Button class="p-button-text absolute top-0 left-0" icon="pi pi-plus" type="button" @click="createNote "
-              label="Not Ekle"/>
+              label="Not Ekle" :disabled="status >0"/>
     </div>
 
 
@@ -69,6 +69,9 @@ export default {
     noteList: {
       type: Array,
       default: () => []
+    },
+    status:{
+      type:Number
     }
   },
   setup(props) {
@@ -116,6 +119,8 @@ export default {
     }
 
     const onRowContextMenu = (event) => {
+      if(props.status >0)
+        return
       cm.value.show(event.originalEvent)
     }
 

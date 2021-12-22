@@ -1,9 +1,9 @@
 <template>
-  <div :class="containerClass" @click="onWrapperClick">
+  <div >
     <AppTopBar @menu-toggle="onMenuToggle"/>
-    <div class="layout-sidebar" @click="onSidebarClick">
+<!--    <div class="layout-sidebar" @click="onSidebarClick">
       <AppMenu v-if="this.$route.path!='/login'" :model="menu" @menuitem-click="onMenuItemClick"/>
-    </div>
+    </div>-->
 
     <div class="layout-main-container">
       <div class="layout-main">
@@ -22,12 +22,12 @@
 <script>
 
 import AppTopBar from '@/view/layouts/header/AppTopbar.vue';
-import AppMenu from '@/view/layouts/main/AppMenu.vue';
+//import AppMenu from '@/view/layouts/main/AppMenu.vue';
 import AppFooter from '@/view/layouts/footer/AppFooter.vue';
 
 export default {
   name: "ContentView",
-  components: {AppTopBar, AppMenu, AppFooter,},
+  components: {AppTopBar, AppFooter,},
   data() {
     return {
       layoutMode: 'static',

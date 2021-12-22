@@ -39,8 +39,23 @@ const IssuesService = {
     },
     getRejectInfo(Id) {
         return client().get(`/api/Issue/RejectReason/${Id}`)
-    }
-
+    },
+        getRejectReason(issueId)
+        {
+            return client().get(`/api/Issue/RejectReason/${issueId}`)
+        },
+        getVersionInfo(Id)
+        {
+            return client().get(`/api/Issue/VersionInfo/${Id}`)
+        },
+        getTitleInfo()
+        {
+            return client().get(`/api/Issue/TitleInfo`)
+        },
+        getSubTitleInfo(titleId)
+        {
+            return client().get(`/api/Issue/SubTitleInfo/${titleId}`)
+        }
 
 }
 export default IssuesService;

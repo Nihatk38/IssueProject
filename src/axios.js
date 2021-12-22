@@ -13,11 +13,11 @@ export default (apiName = "") => {
     if (token && token !== "") {
         headers.Authorization = `Bearer ${token.AccessToken}`;
     }
-
+    console.log(process.env.VUE_APP_API_URL);
     const instance = axios.create({
         baseURL:
             apiName === ""
-                ? process.env.VUE_APP_API_URL + process.env.VUE_APP_API_NAME
+                ? process.env.VUE_APP_API_URL
                 : process.env.VUE_APP_API_URL + apiName,
         withCredentials: false,
         headers: headers

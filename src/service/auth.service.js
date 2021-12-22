@@ -1,6 +1,7 @@
 import apiService from "@/service/apiService";
 
 
+
 const AuthService = {
     loginPost(user) {
         return apiService
@@ -13,6 +14,7 @@ const AuthService = {
             .then(response => {
                 if (response.data.Success) {
                     localStorage.setItem('token', JSON.stringify(response.data.Payload));
+
                 }
 
                 return response.data;

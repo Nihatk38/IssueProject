@@ -1,6 +1,6 @@
 <template>
 	<div class="layout-footer">
-		<span class="font-medium ml-2">Powered By Turkuvaz İnovasyon</span>
+		<span class="font-light ml-2">Powered By Turkuvaz İnovasyon</span>
 	</div>
 </template>
 
