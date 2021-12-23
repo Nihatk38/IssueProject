@@ -24,11 +24,12 @@
             <label for="Password">Şifre</label>&nbsp;
           </div>
 
-          <InputText class="w-full" id="Password" v-model="userInfo.Password" :type="passwordFieldType"/>
+          <InputText class="w-full" id="Password" v-model="userInfo.Password" :type="passwordFieldType"
+          @keypress.enter="login"/>
           <small v-if="v$.Password.$error" class="p-error">Şifre Boş Bırakılamaz.</small>
         </div>
 
-        <Button class="col-4 col-offset-4" type="submit" @click="login(userInfo)" label="Giriş Yap"></Button>
+        <Button class="col-4 col-offset-4" type="submit" @click="login" label="Giriş Yap"></Button>
       </div>
     </div>
 
@@ -66,11 +67,11 @@ export default {
     const passwordFieldIcon = computed(() => hidePassword.value ? "pi pi-eye" : "pi pi-eye-slash");
     const passwordFieldType = computed(() => hidePassword.value ? "Password" : "text");
 
-    const login = (user) => {
+    const login = () => {
 
       v$.value.$validate()
       if (!v$.value.$error) {
-        AuthService.loginPost(user).then(response => {
+        AuthService.loginPost(userInfo).then(response => {
           if (response.Success) {
             toast.add({severity: 'success', summary: 'Başarılı', detail: 'Giriş Yapıldı', life: 3000});
             return router.push("/issueList")

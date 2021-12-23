@@ -1,6 +1,6 @@
 <template>
   <div class="layout-topbar grid">
-    <div class="col-8">
+    <div class="col-9">
       <router-link to="/" class="layout-topbar-logo">
         <img
             alt="logo"
@@ -11,12 +11,12 @@
       </router-link>
     </div>
 
-    <div class="col-offset-1">
-           <p>{{ userInfo.FullName }}-{{ userInfo.RoleName }}</p>
+    <div class="col-2">
+           <p class="text-right">{{ userInfo.FullName }}</p>
 
     </div>
 
-    <div class="col-offset-1 ">
+    <div class="col-1">
       <router-link @click="logOut" to="/login">
         <Button class="p-button-secondary p-button-outlined  ">
           <i class="pi pi-fw pi-sign-out"></i>

@@ -4,7 +4,7 @@
     <div class="p-card-title relative">
       <h5 class="text-center mb-4">AKIŞ BİLGİLERİ</h5>
       <Button class="p-button-text absolute top-0 left-0" icon="pi pi-plus" type="button" @click="addActivity "
-              label="Alternatif Akış Ekle" :disabled="status >0"/>
+              label="Alternatif Akış Ekle" :disabled="status >0 && status <9"/>
     </div>
     <div  v-if="(v$.IssueActivityInfos.$invalid && submitted && !activityInfoSubmitted )" class="p-error mb-2">Temel Akış Boş Bırakılamaz.</div>
     <div class="p-card-body">
@@ -14,6 +14,7 @@
               v-model:IssueActivityDetailInfos="activity.IssueActivityDetailInfos"
               :status="status"
               @submitted="clicked"
+
           ></ActivityInfo>
         </AccordionTab>
       </Accordion>

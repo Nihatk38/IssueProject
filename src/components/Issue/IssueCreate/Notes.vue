@@ -4,7 +4,7 @@
     <div class="p-card-title relative">
       <h5 class="text-center mb-4">NOTLAR</h5>
       <Button class="p-button-text absolute top-0 left-0" icon="pi pi-plus" type="button" @click="createNote "
-              label="Not Ekle" :disabled="status >0"/>
+              label="Not Ekle" :disabled="status >0 && status <9"/>
     </div>
 
 
@@ -41,13 +41,13 @@
     <contextMenu :model="menuModel" ref="cm"/>
 
 
-    <Dialog v-model:visible="createNoteDialog" :modal="true" :style="{width: '450px'}" :visible="true"
+    <Dialog v-model:visible="createNoteDialog" :modal="true" :style="{width: '800px'}" :visible="true"
             class="p-fluid" header="Yeni Not Oluştur">
 
 
       <div class="p-field">
         <label for="Explanation">Not</label>
-        <Textarea id="Explanation" v-model="newExplanation" maxLength="2000"/>
+        <Textarea id="Explanation" v-model="newExplanation" maxLength="2000" cols="50" rows="5"/>
       </div>
 
 
@@ -109,6 +109,9 @@ export default {
     }
 
     const saveNotes = () => {
+      if (noteList.value.length > 0) {
+        keyIndex.value = noteList.value.length
+      }
       keyIndex.value += 1
       noteList.value.push({
         Explanation: newExplanation.value,

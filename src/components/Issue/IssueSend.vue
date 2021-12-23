@@ -1,6 +1,5 @@
 <template>
   <div>
-
     <DataTable class="p-treetable-sm" :value="sends" dataKey="Id"
                v-model:selection="selected" selection-mode="single"
                v-model:filters="filters"
@@ -162,7 +161,7 @@ export default {
       router.push({
         name: 'issueCreate',
         path: '/issueCreate',
-        params: {data: selected.value.Id, status: selected.value.status}
+        params: {data: selected.value.Id, status: selected.value.status,nameData:selected.value.FullName}
       })
     }
     watch(() => selected.value, (value) => {
@@ -197,6 +196,6 @@ export default {
 </script>
 
 
-<style scoped>
-
+<style >
+textarea { resize: none; }
 </style>

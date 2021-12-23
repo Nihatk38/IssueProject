@@ -4,7 +4,7 @@
     <div class="p-card-title relative">
       <h5 class="text-center mb-4">ÖN KOŞUL BİLGİLERİ</h5>
       <Button class="p-button-text absolute top-0 left-0" icon="pi pi-plus" type="button" @click="openPrecondition "
-              label="Ön Koşul Ekle" :disabled="status >0"/>
+              label="Ön Koşul Ekle" :disabled="status >0 && status <9"/>
     </div>
 
 
@@ -101,7 +101,11 @@ export default {
     }
 
     const savePrecondition = () => {
+      if (preconditionList.value.length > 0) {
+        keyIndex.value = preconditionList.value.length
+      }
       keyIndex.value += 1;
+      console.log("key",keyIndex.value)
       preconditionList.value.push({
         Explanation: newPrecondition.value,
         LineNo: parseInt(keyIndex.value)

@@ -116,8 +116,10 @@ export default {
 
       const getUsers =() =>{
         UsersService.getUserList().then(response =>{
+          console.log("Users",response.Payload)
           users.value=response.Payload.map((data)=>{
             return{
+              Id:data.Id,
               FullName:data.FullName,
               EmailAddress:data.EmailAddress,
               DepartmentName:data.DepartmentName,

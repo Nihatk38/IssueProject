@@ -10,12 +10,13 @@
 
 
       <TabView ref="tabview1">
-        <TabPanel header="Bana Gelenler">
-          <issue-incoming :key="renderComponent" ></issue-incoming>
-        </TabPanel>
+
         <TabPanel header="Benim Yazdıklarım">
           <issue-send :key="renderComponent"  ></issue-send>
         </TabPanel>
+        <TabPanel header="Bana Gelenler">
+        <issue-incoming :key="renderComponent" ></issue-incoming>
+      </TabPanel>
       </TabView>
     </div>
   </div>
@@ -28,22 +29,21 @@ import IssueSend from "../../../components/Issue/IssueSend";
 import IssueIncoming from "../../../components/Issue/IssueIncoming";
 import {useToast} from "primevue/usetoast";
 import router from "../../../router";
-import {ref, onMounted} from "vue";
+import {ref,computed} from "vue";
 
 export default {
   components: {IssueIncoming, IssueSend},
 
   setup() {
-    onMounted(()=>{
-      renderComponent.value+=1
-    })
+
     const toast = useToast()
 
     const reRender=ref(false);
-
-    const renderComponent=ref(0)
+    const plus =ref(0)
+    const renderComponent=computed(() => plus.value +1)
 
     console.log("render",renderComponent.value)
+
    // root.$nextTick(() => {renderComponent.value = true;});
 
 
@@ -59,7 +59,7 @@ export default {
     }
 
     return {
-      logOut, newIssue,renderComponent,reRender
+      logOut, newIssue,renderComponent,reRender,plus
 
 
     }

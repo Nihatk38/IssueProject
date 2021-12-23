@@ -30,7 +30,7 @@
                     optionLabel="Subject"
                     :class="{'p-invalid':v$.TitleId.$invalid && submitted}"
                     class="inputfield w-full"
-                    :disabled="status >0"
+                    :disabled="status >0 && status <9"
           />
           <small v-if="(v$.TitleId.$invalid && submitted)" class="p-error">Konu Boş Bırakılmaz.</small>
         </div>
@@ -42,7 +42,7 @@
                     optionValue="Id"
                     optionLabel="SubTitle"
                     class="inputfield w-full"
-                    :disabled="status >0"
+                    :disabled="status >0 && status <9"
           />
         </div>
       </div>
@@ -59,22 +59,26 @@
         <div class="field col-12">
           <label>Kısa Açıklama</label>
           <Textarea v-model="v$.Summary.$model" :class="{'p-invalid':v$.Summary.$invalid && submitted}"
-                    class="inputfield w-full" cols="50" rows="3" :disabled="status >0"></Textarea>
+                    class="inputfield w-full" cols="50" rows="3" :disabled="status >0 && status <9"></Textarea>
           <small v-if="(v$.Summary.$invalid && submitted)" class="p-error">Kısa Açıklama Boş Bırakılamaz.</small>
         </div>
         <div class="field col-12">
-          <label>Aktörler</label><br>
-          <small v-if="(v$.IssueRoleInfos.$invalid && submitted)" class="p-error">Aktörler Boş Bırakılamaz.</small>
-          <div v-for="category of categoriesRoles" :key="category.Id" class="p-field-checkbox mb-1">
-            <Checkbox :id="category.Id" v-model="scenariosValue.IssueRoleInfos" :value="category"
-                      name="category" :disabled="status >0"/>
-            <label :for="category.Id" class="ml-2"> {{ category.Definition }}</label>
+          <label>Aktörler</label>
+          <div class="grid mt-2">
+            <div v-for="category of categoriesRoles" :key="category.Id" class="col-2 p-field-checkbox mb-1">
+              <Checkbox :id="category.Id" v-model="scenariosValue.IssueRoleInfos" :value="category"
+                        name="category" :disabled="status >0 && status <9"/>
+              <label :for="category.Id" class="ml-2"> {{ category.Definition }}</label>
+            </div>
           </div>
+          <small v-if="(v$.IssueRoleInfos.$invalid && submitted)" class="p-error">Aktörler Boş Bırakılamaz.</small>
+
         </div>
       </div>
 
     </template>
   </Card>
+
 </template>
 
 <script>
@@ -86,7 +90,8 @@ import AuthService from "../../../service/auth.service";
 import IssuesService from "../../../service/issueService";
 
 export default {
-  props: ['scenarios', 'submitted', "status"],
+  props: ['scenarios', 'submitted', "status","data"],
+
   setup(props) {
     const {scenarios} = toRefs(props)
     const userInfo = ref('')
@@ -97,7 +102,7 @@ export default {
     const categoriesRoles = ref([])
     const selectedCategoriesRoles = ref(null)
     const state = ref({})
-
+    const TitleControl = ref(true);
     onMounted(() => {
       UsersService.getRole().then(response => {
         categoriesRoles.value = response.Payload
@@ -105,10 +110,16 @@ export default {
       UsersService.getUser(AuthService.getUserId()).then(r => {
         userInfo.value = r.data.Payload
       })
+        if(props.data == null){
+          IssuesService.getTitleInfo(TitleControl.value).then(response =>{
+            resultTitle.value= response.data.Payload
+          })
+        }else{
+          IssuesService.getTitleInfo(!TitleControl.value).then(response =>{
+            resultTitle.value= response.data.Payload
+          })
+        }
 
-        IssuesService.getTitleInfo().then(response =>{
-          resultTitle.value= response.data.Payload
-        })
     })
 
     const rules = {
@@ -116,9 +127,8 @@ export default {
       TitleId: {required},
       SubtitleId: {required},
       Summary: {required},
-      FullName: {required},
-      Task: {required},
-      Actors: {required},
+
+
       IssueRoleInfos: {required},
     }
 
@@ -143,7 +153,8 @@ export default {
       resultTitle,
       Title,
       resultSubTitle,
-      SubTitle
+      SubTitle,
+      TitleControl
     }
   }
 }

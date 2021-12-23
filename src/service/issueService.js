@@ -48,9 +48,9 @@ const IssuesService = {
         {
             return client().get(`/api/Issue/VersionInfo/${Id}`)
         },
-        getTitleInfo()
+        getTitleInfo(TitleControl)
         {
-            return client().get(`/api/Issue/TitleInfo`)
+            return client().get(`/api/Issue/TitleInfo/${TitleControl}`)
         },
         getSubTitleInfo(titleId)
         {

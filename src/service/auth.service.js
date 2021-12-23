@@ -35,6 +35,15 @@ const AuthService = {
             return {};
         }
     },
+    getFromTokenFullName(){
+        let token = JSON.parse(localStorage.getItem('token'));
+        if (token) {
+
+            return token.FullName;
+        } else {
+            return {};
+        }
+    },
     getToken() {
         let token = JSON.parse(localStorage.getItem('token'));
 

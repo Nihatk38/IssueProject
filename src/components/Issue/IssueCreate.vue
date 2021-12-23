@@ -1,10 +1,11 @@
 <template>
-  <Dropdown v-if="status==='9'" v-model="versionInfo" :options="resultVersion" optionValue="Id" optionLabel="VersionNo" placeholder="Önceki Revizyonları İncele"/>
+  <Dropdown class="p-dropdown mb-2" v-if="status==='9' && resultVersion.length>0" v-model="versionInfo" :options="resultVersion" optionValue="Id" optionLabel="VersionNo" placeholder="Önceki Revizyonları İncele"/>
 
   <scenario-information
       :scenarios="IssueInfo"
       :submitted="submitted"
       :status="status"
+      :data="data"
   ></scenario-information>
 
   <precondition
@@ -31,7 +32,7 @@
   ></relevant-departments>
 
   <div class="card cardColor1">
-    <FileUpload :disabled="status>0" :maxFileSize="1000000" :multiple="true"
+    <FileUpload :disabled="status>0 && status<9" :maxFileSize="1000000" :multiple="true"
                 :url="rootPath+'/api/Issue/upload'"
                 accept="image/*" name="IssueAttachmentInfos[]" @upload="onUpload"
                 class="p-button-text">
@@ -40,15 +41,30 @@
       </template>
     </FileUpload>
   </div>
+  <div class="grid">
+    <div class="col-5"></div>
+    <div class="col-2">
+      <router-link to="/issueList">
+        <Button class="p-button p-button-outlined col-4 ml-2">
+          <i class="pi pi-fw pi-backward mr-2"></i>Geri
+        </Button>
+      </router-link>
+
+    </div>
+    <div class="col-5"></div>
+
+  </div>
 
   <div v-if="status === '1' || status === '2' || status === '3' || status === '4'" class="grid mt-2">
-    <Button class="col-4 p-button-success" label="Onayla" @click="answerIssue"/>
-    <Button class="col-4 col-offset-4  p-button-danger " label="Reddet" @click="rejectIssue"/>
+    <Button v-if="nameData != tokenInfo && status>0" class="col-4 p-button-success" label="Onayla" @click="answerIssue"
+         />
+
+    <Button  v-if="nameData != tokenInfo && status>0"  class="col-4 col-offset-4  p-button-danger " label="Reddet" @click="rejectIssue"/>
   </div>
 
   <div v-else class="grid mt-2">
-    <Button class="col-4 p-button-success p-button-outlined" label="Kaydet" @click="save"/>
-    <Button class="col-4 col-offset-4 p-button-success p-button-outlined " label="Kaydet ve Onayla"
+    <Button class="col-4 p-button-warning" label="Kaydet" @click="save"/>
+    <Button class="col-4 col-offset-4 p-button-success  " label="Kaydet ve Onayla"
             @click="saveAndConfirm"/>
   </div>
 
@@ -81,19 +97,21 @@ import ScenarioInformation from "./IssueCreate/ScenarioInformation";
 import RelevantDepartments from "./IssueCreate/RelevantDepartments";
 import Precondition from "./IssueCreate/Precondition";
 import Notes from "./IssueCreate/Notes";
-
+import AuthService from "@/service/auth.service";
 import IssuesService from "@/service/issueService";
 
 export default {
-  props: ['data', 'status'],
+  props: ['data', 'status','nameData'],
   components: {ActivityList, Precondition, RelevantDepartments, ScenarioInformation, Notes},
   setup(props) {
+
     const newDescription = ref('')
 
     const confirmModel = ref({
       IssueId: '',
       Description: ''
     })
+
     const openRejectDialog = ref(false)
     const submitted = ref(false)
     const IssueInfo = ref({})
@@ -126,12 +144,13 @@ export default {
     IssuesService.getVersionInfo(props.data).then( response => {
       resultVersion.value = response.data.Payload
     })
-
+    const back = () =>{
+      router.push("/issueList")
+    }
     const v$ = useVuelidate(rules, IssueInfo.value)
-
+    const tokenInfo = ref(AuthService.getFromTokenFullName());
 
     const onUpload = (e) => {
-      console.log("eerere",e.xhr.responseText)
       if(e.xhr.responseText == "MUKERRERKAYIT")
         toast.add({severity: 'info', summary: 'Başarısız', detail: 'Bu Dosya isminden Daha Önceden Kayıt Tespit Edildi.Lütfen Başka Bir Dosya Ekleyin Veya Dosya İsmini Değiştirin!', life: 5000});
       else if (e.xhr.responseText == "ONAY"){
@@ -304,7 +323,8 @@ export default {
       newDescription,
       versionInfo,
       resultVersion,
-      saveAndConfirm
+      saveAndConfirm,
+      back,tokenInfo
     }
   }
 }

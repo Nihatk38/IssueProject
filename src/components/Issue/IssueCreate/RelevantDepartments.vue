@@ -1,7 +1,7 @@
 <template>
 <Card class="col-12 mb-3 cardColor2" style="border-radius: 0.8rem">
   <template #header>
-    <h6 style="text-align: center"> İLGİLİ DEPARTMAN BİLGİLERİ</h6>
+    <h5 class="text-center my-4">İLGİLİ DEPARTMAN BİLGİLERİ</h5>
   </template>
   <template #content>
     <div>
@@ -10,7 +10,7 @@
       <div class="grid">
         <div v-for="category of categoriesDepartment" :key="category.Definition" class="col-4 p-field-checkbox">
           <Checkbox :id="category.Definition" name="category" :value="category"
-                    v-model="departmentValue.DepartmentId" :disabled="status >0"/>
+                    v-model="departmentValue.DepartmentId" :disabled="status >0 && status <9"/>
           <label :for="category.key"> {{category.Definition}}</label>
         </div>
 

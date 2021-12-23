@@ -47,28 +47,28 @@
   <Dialog v-model:visible="createNoteDialog" :modal="true" :style="{width: '800px'}" :visible="true"
           class="p-fluid" header="Yeni Akış Oluştur">
 
-    <div class="p-field">
+    <div class="p-field mb-2">
       <label for="Definition">Tanım</label>
       <Textarea id="Definition" v-model="activity.Definition" :auto-resize="true" maxLength="2000"/>
       <small v-if="(v$.Definition.$invalid && submitted)" class="p-error">Tanım Boş Bırakılamaz.</small>
     </div>
 
-    <div class="p-field">
+    <div class="p-field mb-2">
       <label for="RoleId">Rol</label>
       <Dropdown v-model="activity.RoleId" :options="resultRoles" optionLabel="Definition" optionValue="Id"/>
       <small v-if="(v$.RoleId.$invalid && submitted)" class="p-error">Rol Boş Bırakılamaz.</small>
     </div>
 
-    <div class="p-field">
+    <div class="p-field mb-2">
       <label for="Medium">Ortam</label>
       <InputText id="Precondition" v-model="activity.Medium" :auto-resize="true"/>
-      <small v-if="(v$.Medium.$invalid && submitted)" class="p-error">Ortam Bilgisi Boş Bırakılamaz.</small>
+
     </div>
 
     <div class="p-field">
       <label for="Explanation">Açıklama</label>
       <Textarea id="Definition" v-model="activity.Explanation" :auto-resize="true" maxLength="2000"/>
-      <small v-if="(v$.Explanation.$invalid && submitted)" class="p-error">Açıklama Bırakılamaz.</small>
+
     </div>
 
 
@@ -117,9 +117,7 @@ export default {
     const cm = ref()
     const rules = {
       Definition: {required},
-      RoleId: {required},
-      Medium: {required},
-      Explanation: {required},
+      RoleId: {required}
     }
     let nodeList = [];
     let nodeIndex = 0;
@@ -179,7 +177,7 @@ export default {
         command: () => {
           addDetail(null)
         },
-        disabled: props.status>0
+        disabled: props.status>0 && props.status <9
       },
       {
         label: "Alt Detay Ekle",
