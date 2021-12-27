@@ -3,21 +3,41 @@
 
     <div class="p-card-title relative">
       <h5 class="text-center mb-4">AKIŞ BİLGİLERİ</h5>
-      <Button class="p-button-text absolute top-0 left-0" icon="pi pi-plus" type="button" @click="addActivity "
-              label="Alternatif Akış Ekle" :disabled="status >0 && status <9"/>
+
     </div>
-    <div  v-if="(v$.IssueActivityInfos.$invalid && submitted && !activityInfoSubmitted )" class="p-error mb-2">Temel Akış Boş Bırakılamaz.</div>
+    <slot name="activitiyinfos"></slot>
+<!--    <div v-if="(v$.IssueActivityInfos.$invalid && submitted && !activityInfoSubmitted )" class="p-error mb-2">Temel Akış
+      Boş Bırakılamaz.
+    </div>-->
     <div class="p-card-body">
-      <Accordion :activeIndex="[0]" :multiple="true">
-        <AccordionTab v-for="activity in IssueActivityInfos" :key="activity.Id" :header="activity.SubActivityTitle">
+      <Accordion :activeIndex="accordionIndex" :multiple="false">
+        <AccordionTab v-for="activity in IssueActivityInfos" :key="activity.SubActivityNo"
+                      class="justify-content-between">
+          <template #header>
+            <div class="flex align-items-center w-full">
+              {{ activity.SubActivityTitle }}<span style="color: red"> *</span>
+              <div class="flex-1 text-right">
+                <Button class="p-button-info p-button-outlined mr-1" icon="pi pi-copy"
+                        :disabled="status>0 && status<9 " @click.stop="copyActivity(activity)"/>
+                <Button v-if="activity.Type !== 1" class="p-button-danger p-button-outlined " icon="pi pi-times"
+                        :disabled="status>0 && status<9 " @click.stop="deleteActivity(activity)"/>
+              </div>
+            </div>
+
+          </template>
+
           <ActivityInfo
               v-model:IssueActivityDetailInfos="activity.IssueActivityDetailInfos"
               :status="status"
               @submitted="clicked"
-
           ></ActivityInfo>
+
         </AccordionTab>
       </Accordion>
+      <div class="w-full text-center mt-2">
+        <Button class="p-button-text" icon="pi pi-plus" type="button" @click="addActivity " :disabled="status>0 && status<9 "
+                label="Alternatif Akış Ekle"/>
+      </div>
     </div>
   </div>
 </template>
@@ -26,8 +46,8 @@
 
 import {ref, toRefs} from "vue";
 import ActivityInfo from "./ActivityInfo";
-import {required} from "@vuelidate/validators";
-import useVuelidate from "@vuelidate/core";
+import {useToast} from "primevue/usetoast";
+import {useConfirm} from "primevue/useconfirm";
 
 export default {
   components: {ActivityInfo},
@@ -37,28 +57,28 @@ export default {
       type: Array,
       default: () => []
     },
-    status:{
-      type:Number,
+    status: {
+      type: Number,
 
     },
-  submitted:{
-      type:Boolean
-  }
+    submitted: {
+      type: Boolean
+    }
   },
 
   setup(props) {
     const {IssueActivityInfos} = toRefs(props)
-
+    const confirm = useConfirm()
     const index = ref(0);
+    const accordionIndex = ref(0);
     const state = ref([{}]);
     const Departments = ref([]);
+    const selected = ref()
     const detailInfos = ref([])
-    const activityInfoSubmitted=ref(false)
-    const rules = {
-      IssueActivityInfos: {required}
-    }
-    const clicked=(submitted) =>{
-    activityInfoSubmitted.value = submitted
+    const activityInfoSubmitted = ref(false)
+    const toast = useToast()
+    const clicked = (submitted) => {
+      activityInfoSubmitted.value = submitted
     }
     if (!IssueActivityInfos.value.length)
       IssueActivityInfos.value.push({
@@ -68,6 +88,14 @@ export default {
         IssueActivityDetailInfos: [],
       });
 
+    function reorderActivityNo() {
+      index.value = 1;
+      IssueActivityInfos.value.forEach((activty) => {
+        activty.SubActivityTitle = activty.Type === 1 ? "Temel Akıs" : ("Alternatif Akıs " + ++index.value);
+        activty.SubActivityNo = index.value;
+      });
+    }
+
     const addActivity = () => {
       IssueActivityInfos.value.push({
         Type: 2,
@@ -75,13 +103,42 @@ export default {
         SubActivityTitle: "Alternatif Akıs " + index.value,
         IssueActivityDetailInfos: []
       });
+      accordionIndex.value++;
     };
-    const v$ = useVuelidate(rules, IssueActivityInfos.value)
+
+    const copyActivity = (activity) => {
+      const newActivity = {...activity, Id: 0, Type: 2};
+      IssueActivityInfos.value.push(newActivity);
+      reorderActivityNo();
+
+      accordionIndex.value++;
+    };
+
+    const deleteActivity = (activity) => {
+      confirm.require({
+        message:"Akışı silmek isteediğinizden emin misiniz?",
+        header:"Onay Ver",
+        icon:"pi pi- exclamation-triangle",
+        accept :() =>{
+          IssueActivityInfos.value.splice(IssueActivityInfos.value.indexOf(activity), 1)
+
+          reorderActivityNo();
+          accordionIndex.value = -1;
+          toast.add({severity: 'warn', summary: 'Akış Silindi', detail:'Başarılı' ,life:3000});
+        },
+        reject:()=>{
+          toast.add({severity: 'error', summary: 'Akış Silinemedi', detail:'Başarısız' ,life:3000});
+        }
+      })
+    }
+
+
+
     return {
 
-      state, Departments, index, detailInfos,rules,v$,clicked,activityInfoSubmitted,
+      state, Departments, index, detailInfos, clicked, activityInfoSubmitted, accordionIndex,
 
-      addActivity
+      addActivity, copyActivity, deleteActivity, selected
     }
   }
 }

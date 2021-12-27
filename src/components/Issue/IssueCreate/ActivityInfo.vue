@@ -2,6 +2,8 @@
 
   <TreeTable :value="nodes" filterDisplay="menu" selectionMode="single"
              contextMenu @contextmenu="onRowContextMenu"
+             v-model:selection="selectedNode"
+             v-model:contextMenuSelection="selectedNode"
              @nodeSelect="onNodeSelect" @nodeUnselect="onNodeUnselect">
     <template #empty>
       Kayıt bulunamadı
@@ -44,8 +46,11 @@
   <ContextMenu :model="menuModel" ref="cm"/>
 
 
-  <Dialog v-model:visible="createNoteDialog" :modal="true" :style="{width: '800px'}" :visible="true"
-          class="p-fluid" header="Yeni Akış Oluştur">
+  <Dialog v-model:visible="createActivityDialog" :modal="true" :style="{width: '800px'}" :visible="true"
+          class="p-fluid">
+    <template #header="">
+      <p>Yeni Akış oluştur--> {{ onNodeSelect }}</p>
+    </template>
 
     <div class="p-field mb-2">
       <label for="Definition">Tanım</label>
@@ -53,15 +58,15 @@
       <small v-if="(v$.Definition.$invalid && submitted)" class="p-error">Tanım Boş Bırakılamaz.</small>
     </div>
 
-    <div class="p-field mb-2">
-      <label for="RoleId">Rol</label>
-      <Dropdown v-model="activity.RoleId" :options="resultRoles" optionLabel="Definition" optionValue="Id"/>
-      <small v-if="(v$.RoleId.$invalid && submitted)" class="p-error">Rol Boş Bırakılamaz.</small>
+    <div class="p-field mb-4">
+<!--      <label for="RoleId">Rol</label>-->
+      <Dropdown v-model="activity.RoleId" :options="resultRoles" optionLabel="Definition" optionValue="Id" placeholder="Rol Seçiniz."/>
+     <small v-if="(v$.RoleId.$invalid && submitted)" class="p-error">Rol Boş Bırakılamaz.</small>
     </div>
 
-    <div class="p-field mb-2">
-      <label for="Medium">Ortam</label>
-      <InputText id="Precondition" v-model="activity.Medium" :auto-resize="true"/>
+    <div class="p-field mb-4">
+<!--      <InputText id="Precondition" v-model="activity.Medium" :auto-resize="true"/>-->
+      <Dropdown v-model="activity.Medium"  :options="Mediums" optionLabel="label" optionValue="value" placeholder="Ortam Seçiniz." />
 
     </div>
 
@@ -70,11 +75,10 @@
       <Textarea id="Definition" v-model="activity.Explanation" :auto-resize="true" maxLength="2000"/>
 
     </div>
-
-
     <template #footer>
-      <Button class="p-button-text" icon="pi pi-times" label="İptal" @click="createNoteDialog=false"/>
-      <Button class="p-button-text" icon="pi pi-check" label="Kaydet" @click="saveNotes()"/>
+      <Button class="p-button-text" icon="pi pi-times" label="İptal" @click="cancelButton"/>
+      <Button v-if="updateButton" class="p-button-text" icon="pi pi-check" label="Güncelle" @click="updateSelected()"/>
+      <Button v-else class="p-button-text" icon="pi pi-check" label="Kaydet" @click="saveNotes()"/>
     </template>
   </Dialog>
 
@@ -83,9 +87,8 @@
 <script>
 import {computed, onMounted, ref, watch} from "vue";
 import UsersService from "@/service/users.service";
-import {required} from "@vuelidate/validators";
 import useVuelidate from "@vuelidate/core";
-
+import {required} from "@vuelidate/validators";
 export default {
   props: {
     Header: {
@@ -99,14 +102,13 @@ export default {
     status:{
       type:Number
     },
-
   },
   emits:['submitted'],
   setup(props, {emit}) {
-
+    const updateButton = ref(false)
     const nodes = ref([])
     const indexNum = ref(null)
-    const createNoteDialog = ref(false)
+    const createActivityDialog = ref(false)
     const selectedNode = ref(null)
     const parentNode = ref(null)
     const activity = ref({})
@@ -115,13 +117,20 @@ export default {
     const keyIndex = ref(0)
     const submitted=ref(false)
     const cm = ref()
-    const rules = {
-      Definition: {required},
-      RoleId: {required}
-    }
+    const Mediums = ref([
+      {label: 'Excel', value: 'Excel'},
+      {label: 'Formes', value: 'Formes'},
+      {label: 'Mail', value: 'Mail'},
+      {label: 'Telefon', value: 'Telefon'}
+    ]);
     let nodeList = [];
     let nodeIndex = 0;
-
+    const rules= ref({
+        RoleId:{required},
+        Definition:{required}
+    })
+    const v$=useVuelidate(computed(()=>rules.value),activity.value)
+    console.log("acvitiy.value",activity.value)
     watch(() => props.IssueActivityDetailInfos, () => {
       fillData();
     })
@@ -179,12 +188,20 @@ export default {
         },
         disabled: props.status>0 && props.status <9
       },
+
       {
         label: "Alt Detay Ekle",
         icon: "pi pi-plus",
         disabled: computed(() => selectedNode.value == null  ),
         command: () => {
           addDetail(selectedNode.value)
+        }
+      },
+      {
+        label: "Güncelle",
+        disabled: computed(() => selectedNode.value == null),
+        command: () => {
+          openUpdateDialog()
         }
       },
       {
@@ -201,12 +218,54 @@ export default {
     ])
 
     const createNote = () => {
-      createNoteDialog.value = true
+      createActivityDialog.value = true
+    }
+    const openUpdateDialog = () => {
+      updateButton.value=true;
+      activity.value = {...selectedNode.value.data}
+      createNote()
+    }
+    const updateSelected = () => {
+
+      let detailsInfo = [...props.IssueActivityDetailInfos];
+
+      let foundItem = findByProperty(detailsInfo, val => val.Index === selectedNode.value.data.Index);
+
+      const parentIndex = detailsInfo.indexOf(foundItem);
+      if (parentIndex >= 0) {
+        detailsInfo.splice(parentIndex, 1, {...activity.value});
+      } else {
+        let foundParent = null;
+
+        for (let i = 0; i < detailsInfo.length; i++) {
+          const detail = detailsInfo[i];
+          foundParent = findParent(detail, selectedNode.value.data.Index);
+          if (foundParent)
+            break;
+        }
+
+        if (foundParent) {
+          foundParent.IssueActivityDetailInfos.splice(foundParent.IssueActivityDetailInfos.indexOf(foundItem), 1, {...activity.value});
+        }
+      }
+
+      emit('update:IssueActivityDetailInfos', detailsInfo);
+
+      cancelButton()
+
     }
 
+    const cancelButton = () => {
+      createActivityDialog.value = false
+      activity.value.Definition = ""
+      activity.value.RoleId = ""
+      activity.value.Medium = ""
+      activity.value.Explanation = ""
+      updateButton.value=false;
+    }
     const addDetail = (node) => {
       parentNode.value = node
-      createNoteDialog.value = true
+      createActivityDialog.value = true
     };
 
     const findParent = (parent, index) => {
@@ -265,54 +324,55 @@ export default {
     }
 
     const addNode = () => {
-      submitted.value=true;
-      if(!v$.value.$error){
+     /* ;
+
         submitted.value=false
-        emit('submitted',true)
-      if (parentNode.value) {
-        let detailsInfo = [...props.IssueActivityDetailInfos];
+        emit('submitted',true)*/
+      submitted.value=true;
+      v$.value.$validate();
+      if(!v$.value.$error){
+        submitted.value=false;
+        if (parentNode.value) {
+          let detailsInfo = [...props.IssueActivityDetailInfos];
 
-        let foundItem = findByProperty(detailsInfo, val => val.Index === parentNode.value.data.Index);
+          let foundItem = findByProperty(detailsInfo, val => val.Index === parentNode.value.data.Index);
 
-        if (foundItem) {
-          foundItem.IssueActivityDetailInfos = foundItem.IssueActivityDetailInfos || [];
-          foundItem.IssueActivityDetailInfos.push({
-            LineNo: 0,
+          if (foundItem) {
+            foundItem.IssueActivityDetailInfos = foundItem.IssueActivityDetailInfos || [];
+            foundItem.IssueActivityDetailInfos.push({
+              LineNo: 0,
+              Definition: activity.value.Definition,
+              RoleId: activity.value.RoleId,
+              Medium: activity.value.Medium,
+              Explanation: activity.value.Explanation,
+              IssueActivityDetailInfos: []
+            })
+          }
+
+          emit('update:IssueActivityDetailInfos', detailsInfo);
+
+          parentNode.value = null;
+
+        } else {
+
+          keyIndex.value += 1;
+
+          let detailsInfo = [...props.IssueActivityDetailInfos];
+          detailsInfo.push({
+            LineNo: (keyIndex.value).toString(),
             Definition: activity.value.Definition,
             RoleId: activity.value.RoleId,
             Medium: activity.value.Medium,
             Explanation: activity.value.Explanation,
             IssueActivityDetailInfos: []
           })
+          emit('update:IssueActivityDetailInfos', detailsInfo);
         }
+        createActivityDialog.value = false
+        activity.value = {};
 
-        emit('update:IssueActivityDetailInfos', detailsInfo);
-
-        parentNode.value = null;
-
-      } else {
-
-        keyIndex.value += 1;
-
-        let detailsInfo = [...props.IssueActivityDetailInfos];
-        detailsInfo.push({
-          LineNo: (keyIndex.value).toString(),
-          Definition: activity.value.Definition,
-          RoleId: activity.value.RoleId,
-          Medium: activity.value.Medium,
-          Explanation: activity.value.Explanation,
-          IssueActivityDetailInfos: []
-        })
-        emit('update:IssueActivityDetailInfos', detailsInfo);
       }
-
-      createNoteDialog.value = false
-      activity.value = {};
-      }else
-        emit('submitted',false)
     }
-
-
     const onRowContextMenu = (event) => {
       if(props.status >0)
         return
@@ -331,11 +391,10 @@ export default {
             resultRoles.value = response.Payload
           })
     });
-    const v$ = useVuelidate(rules, activity.value)
     return {
-      createNoteDialog, createNote, activity, indexNum, nodes,
+      createActivityDialog, createNote, activity, indexNum, nodes,
       saveNotes: addNode, keyIndex, addDetail, childIndex, resultRoles, deleteNote: deleteNode, cm, menuModel,
-      onRowContextMenu, onNodeSelect, onNodeUnselect,rules,v$,submitted
+      onRowContextMenu, onNodeSelect, onNodeUnselect,submitted,Mediums,v$,rules,updateSelected,updateButton,cancelButton
     }
   }
 }

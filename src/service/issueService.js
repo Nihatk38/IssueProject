@@ -55,7 +55,15 @@ const IssuesService = {
         getSubTitleInfo(titleId)
         {
             return client().get(`/api/Issue/SubTitleInfo/${titleId}`)
-        }
-
+        },
+        deleteIssue(Id) {
+        return client().delete(`/api/Issue/Delete/${Id}`)
+    },
+    addTitle(title) {
+        return client().post(`api/Issue/AddTitle`, title)
+    },
+    updateTitle(title) {
+        return client().put(`api/title/UpdateTitle`, title)
+    },
 }
 export default IssuesService;

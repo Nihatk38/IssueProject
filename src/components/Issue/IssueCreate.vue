@@ -1,12 +1,26 @@
 <template>
-  <Dropdown class="p-dropdown mb-2" v-if="status==='9' && resultVersion.length>0" v-model="versionInfo" :options="resultVersion" optionValue="Id" optionLabel="VersionNo" placeholder="Önceki Revizyonları İncele"/>
+  <Dropdown class="p-dropdown mb-2" v-if="status==='9' " v-model="versionInfo" :options="resultVersion" optionValue="Id" optionLabel="VersionNo" placeholder="Önceki Revizyonları İncele"/>
 
   <scenario-information
       :scenarios="IssueInfo"
       :submitted="submitted"
       :status="status"
       :data="data"
-  ></scenario-information>
+      :comingName="comingName"
+      :comingDepartment="comingDepartment"
+      :comingRole="comingRole"
+  >
+    <template v-slot:title>
+      <small v-if="(v$.TitleId.$invalid && submitted)" class="p-error">Konu Boş Bırakılmaz.</small>
+    </template>
+    <template v-slot:summary>
+      <small v-if="(v$.Summary.$invalid && submitted)" class="p-error">Kısa Açıklama Boş Bırakılamaz.</small>
+    </template>
+    <template v-slot:roleinfos>
+      <small v-if="(v$.IssueRoleInfos.$invalid && submitted)" class="p-error">Aktörler Boş Bırakılamaz.</small>
+    </template>
+
+  </scenario-information>
 
   <precondition
       :precondition-list="IssueInfo.IssuePreconditionInfos"
@@ -18,8 +32,13 @@
       :IssueActivityInfos="IssueInfo.IssueActivitiyInfos"
       :status="status"
       :submitted="submitted"
-  ></activity-list>
-
+  >
+    <template v-slot:activitiyinfos>
+      <div v-if="(arrayErrors.length>3 && submitted )" class="p-error mb-2">Temel Akış
+        Boş Bırakılamaz.
+      </div>
+    </template>
+  </activity-list>
   <notes
       :note-list="IssueInfo.IssueNoteInfos"
       :status="status"
@@ -45,7 +64,7 @@
     <div class="col-5"></div>
     <div class="col-2">
       <router-link to="/issueList">
-        <Button class="p-button p-button-outlined col-4 ml-2">
+        <Button class="p-button  col-4 ml-2">
           <i class="pi pi-fw pi-backward mr-2"></i>Geri
         </Button>
       </router-link>
@@ -56,8 +75,8 @@
   </div>
 
   <div v-if="status === '1' || status === '2' || status === '3' || status === '4'" class="grid mt-2">
-    <Button v-if="nameData != tokenInfo && status>0" class="col-4 p-button-success" label="Onayla" @click="answerIssue"
-         />
+
+    <Button v-if="nameData != tokenInfo && status>0" class="col-4 p-button-success" label="Onayla" @click="answerIssue"/>
 
     <Button  v-if="nameData != tokenInfo && status>0"  class="col-4 col-offset-4  p-button-danger " label="Reddet" @click="rejectIssue"/>
   </div>
@@ -101,7 +120,7 @@ import AuthService from "@/service/auth.service";
 import IssuesService from "@/service/issueService";
 
 export default {
-  props: ['data', 'status','nameData'],
+  props: ['data', 'status','nameData','comingName','comingDepartment','comingRole'],
   components: {ActivityList, Precondition, RelevantDepartments, ScenarioInformation, Notes},
   setup(props) {
 
@@ -120,9 +139,16 @@ export default {
     const showButton = ref(false)
     const versionInfo=ref('');
     const resultVersion=ref({});
-    const rules = {
-      IssueInfo: {required}
-    }
+    const arrayErrors=ref([]);
+    const rules = computed(()=> {
+      return {
+        IssueRoleInfos: {required},
+        Summary: {required},
+        TitleId: {required},
+
+      }
+    })
+
     const toast = useToast()
     const confirm = useConfirm()
     const rootPath = computed(() => {
@@ -147,7 +173,7 @@ export default {
     const back = () =>{
       router.push("/issueList")
     }
-    const v$ = useVuelidate(rules, IssueInfo.value)
+    const v$ = useVuelidate(rules, computed(()=>IssueInfo.value))
     const tokenInfo = ref(AuthService.getFromTokenFullName());
 
     const onUpload = (e) => {
@@ -168,40 +194,56 @@ export default {
 
     const saveAndConfirm = () => {
       IssueInfo.value.IsSaveWithConfirm = true
+
+      console.log("bırasus",IssueInfo.value)
       save()
     }
 
     const save = () => {
       submitted.value = true;
       v$.value.$validate()
-      if (v$.value.$error) {
-        window.scrollTo(0, 0);
-        IssueInfo.value.IssueRelevantDepartmentInfos = IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId.map((m) => {
-          return {
-            DepartmentId: m.Id
+      arrayErrors.value.length=(v$.value.$errors.length)
+      console.log("v$ yeri",v$.value)
+      console.log("array yeri",arrayErrors.value)
+      if (!v$.value.$error) {
+        if(IssueInfo.value.IssueRelevantDepartmentInfos.length>0){
+          if(IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId.length>0){
+            IssueInfo.value.IssueRelevantDepartmentInfos = IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId.map((m) => {
+              return {
+                DepartmentId: m.Id
+              }
+            })
           }
-        })
+        }
 
-        IssueInfo.value.IssueRoleInfos = IssueInfo.value.IssueRoleInfos.map((m) => {
-          return {
-            RoleId: m.Id
-          }
-        })
+       if(IssueInfo.value.IssueRoleInfos.length>0){
+         IssueInfo.value.IssueRoleInfos = IssueInfo.value.IssueRoleInfos.map((m) => {
+           return {
+             RoleId: m.Id
+           }
+         })
+       }
 
         IssuesService.addIssue(IssueInfo.value)
             .then(response => {
               if (response.data.Success) {
                 ResetValue();
+
                 toast.add({severity: 'success', summary: 'Başarılı', detail: 'İş Kaydı Oluşturuldu', life: 3000});
-                console.log("IssueInfo.value", IssueInfo.value);
+
               } else {
-                toast.add({severity: 'error', summary: 'Hata', detail: 'İş Kaydı Oluşturulamadı', life: 3000});
+                toast.add({severity: 'error', summary: 'Hata', detail: 'Beklenmedik Bir Hata Oluştu.Lütfen Daha Sonra Tekrar Deneyin.', life: 3000});
               }
             }).catch(e => {
           console.log(e)
         })
+        router.push("/issueList")
+      }else {
+        window.scrollTo(0, 0);
+        v$.value.$reset();
+        toast.add({severity: 'error', summary: 'Hata', detail: 'İş Kaydı Oluşturulamadı.Lütfen Zorunlu Alanları Doldurun.', life: 3000});
       }
-      router.push("/issueList")
+
     }
 
     if (props.data > 0) {
@@ -324,7 +366,7 @@ export default {
       versionInfo,
       resultVersion,
       saveAndConfirm,
-      back,tokenInfo
+      back,tokenInfo,arrayErrors
     }
   }
 }

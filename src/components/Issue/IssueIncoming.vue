@@ -126,12 +126,13 @@ export default {
         }
       },
     ])
-
+    console.log("coming",comingList.value)
     const viewIssue = () => {
       router.push({
         name: 'issueCreate',
         path: '/issueCreate',
-        params: {data: selected.value.Id, status: selected.value.status}
+        params: {data: selected.value.Id, status: selected.value.status,comingName:selected.value.FullName,
+          comingDepartment:selected.value.DepartmentName,comingRole:selected.value.RoleName}
       })
     }
 

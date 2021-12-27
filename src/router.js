@@ -5,7 +5,7 @@ import DepartmentList from "@/view/pages/Departments/DepartmentList";
 import IssueList from "@/view/pages/Issue/IssueList";
 import IssueCreate from "@/components/Issue/IssueCreate";
 import AuthService from "@/service/auth.service";
-
+import TitleList from "@/components/Title/TitleList";
 import Login from "@/view/LoginView";
 import ContentView from "@/view/ContentView";
 
@@ -29,6 +29,14 @@ const routes = [
                 name: 'issueCreate',
                 component: IssueCreate,
                 props: true,
+                meta: {
+                    auth: true
+                }
+            },
+            {
+                path: '/titleList',
+                name: 'titleList',
+                component: TitleList,
                 meta: {
                     auth: true
                 }

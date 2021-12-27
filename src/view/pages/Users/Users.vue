@@ -170,7 +170,7 @@ export default {
         }
       },
       {
-        label:"Güncelle",
+        label:"Düzelt",
         icon:"pi pi-pencil",
         command:() =>{
           updateUser(selected)

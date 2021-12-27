@@ -13,7 +13,7 @@
 
         <div class="col-12">
           <div style="margin-bottom: 0.5rem">
-            <label for="UserId">Kullanıcı Adı</label>
+            <label for="UserId">Sicil No</label>
           </div>
           <InputText class="w-full" id="UserId" v-model="userInfo.UserId" type="text"/>
           <small v-if="v$.UserId.$error" class="p-error">Kullanıcı Adı Boş Bırakılamaz.</small>

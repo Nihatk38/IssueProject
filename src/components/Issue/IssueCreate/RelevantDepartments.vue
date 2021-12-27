@@ -5,10 +5,10 @@
   </template>
   <template #content>
     <div>
-      <div  v-if="(v$.DepartmentId.$invalid && submitted  )" class="p-error mb-2">İlgili Departman Bilgisi Boş Bırakılamaz.</div>
+<!--      <div  v-if="(v$.DepartmentId.$invalid && submitted  )" class="p-error mb-2">İlgili Departman Bilgisi Boş Bırakılamaz.</div>-->
       </div>
       <div class="grid">
-        <div v-for="category of categoriesDepartment" :key="category.Definition" class="col-4 p-field-checkbox">
+        <div v-for="category of departmentList" :key="category.Definition" class="col-4 p-field-checkbox">
           <Checkbox :id="category.Definition" name="category" :value="category"
                     v-model="departmentValue.DepartmentId" :disabled="status >0 && status <9"/>
           <label :for="category.key"> {{category.Definition}}</label>
@@ -26,28 +26,36 @@
 <script>
 import {onMounted, ref, toRefs} from "vue";
 import UsersService from "../../../service/users.service";
-import useVuelidate from "@vuelidate/core";
-import {required} from "@vuelidate/validators";
+import AuthService from "@/service/auth.service";
 export default {
   props:['departments', 'status', 'submitted'],
 
   setup(props){
     onMounted(()=>{
       UsersService.getDepartment().then(response =>{
-        categoriesDepartment.value=response.Payload
+        categoriesDepartment.value=response.Payload;
+
+        UsersService.getUser(AuthService.getUserId()).then(response =>{
+          userInfo.value=response.data.Payload
+          departmentList.value = categoriesDepartment.value.filter(department=> department.Id !=userInfo.value.DepartmentId);
+          console.log("userInfo",userInfo.value)
+
+        })
+      console.log("categoriesDepartment",categoriesDepartment.value)
+
       })
-    })
-    const rules ={
-      DepartmentId:{required}
-    }
 
 
+  })
+
+    const userInfo=ref()
     const selectedCategoriesDepartment=ref()
     const {departments}=toRefs(props)
     const categoriesDepartment=ref([ ])
-    const v$ = useVuelidate(rules,departments)
+    const departmentList = ref();
+
     return{
-      selectedCategoriesDepartment,categoriesDepartment,departmentValue:departments,v$
+      selectedCategoriesDepartment,categoriesDepartment,departmentValue:departments,userInfo,departmentList
     }
   }
 }

@@ -41,7 +41,6 @@
           <InputText type="text" v-model="filterModel.value" class="p-column-filter"/>
         </template>
       </Column>
-
       <Column field="Durum" header="Durum" :style="{width:'250px'}">
         <template #body="{data}">
           <span :class="'Issue status-' + data.status" class="ml-3">{{ data.statusText }}</span>
@@ -50,14 +49,34 @@
           <InputText type="text" v-model="filterModel.value"/>
         </template>
       </Column>
-
     </DataTable>
     <ContextMenu ref="cm" :model="menuModel" suppressContextMenu:true/>
-
     <Dialog v-model:visible="openRejectDialog" :modal="true" :style="{width:'800px', }" class="p-fluid"
             header="Red Sebebi" >
-      <div class="p-field">
-        <Textarea style="text-align: center" :disabled="true" v-model="rejectInfo"></Textarea>
+      <div class="p-field grid">
+        <div class="col-6 grid align-items-center">
+          <div class="col-6">
+            <label class="font-bold text-gray-400">Reddedilme Tarihi:</label>
+          </div>
+          <div class="col-6 ">
+            {{rejectInfo.SubmitTime}}
+<!--            <InputText style="text-align: center" :disabled="true" v-model="rejectInfo.SubmitTime"></InputText>-->
+          </div>
+        </div>
+        <div class="col-6 grid align-items-center" >
+          <div class="col-6 text-right ">
+            <label class="font-bold text-gray-400  ">Reddeden Kişi:</label>
+          </div>
+          <div class="col-6">
+            {{rejectInfo.FullName}}
+<!--            <InputText style="text-align: center" :disabled="true" v-model="rejectInfo.FullName"></InputText>-->
+          </div>
+        </div>
+      </div>
+      <div class="p-field grid">
+        <div class="col-12 border-1 border-200 border-round mt-2 p-2">
+            {{rejectInfo.Description}}
+        </div>
       </div>
 
     </Dialog>
@@ -75,18 +94,19 @@ import {FilterMatchMode, FilterOperator} from "primevue/api";
 import IssuesService from "@/service/issueService";
 
 import Functions from "@/auxiliary/directive/functions";
+import {useConfirm} from "primevue/useconfirm";
 
 
 export default {
   setup() {
-    const rejectInfo = ref(null)
+    const rejectInfo = ref({})
     const rejectShow = ref(false)
     const sends = ref(null)
     const cm = ref()
     const selected = ref(null)
     const openRejectDialog = ref(false)
     const confirmContext = ref(false)
-
+    const confirm = useConfirm()
     const filters = ref({
       'global': {value: null, matchMode: FilterMatchMode.CONTAINS},
       'FullName': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
@@ -146,22 +166,54 @@ export default {
           showRejectInfo()
         }
 
+      },
+      {
+        label: "Sil",
+         icon: 'pi pi-trash',
+        command: () => {
+          deleteIssue(selected)
+        }
+
       }
     ])
 
     const showRejectInfo = () => {
       openRejectDialog.value = true
       IssuesService.getRejectInfo(selected.value.Id).then(response => {
-        rejectInfo.value = response.data.Payload.Description
+
+        rejectInfo.value = response.data.Payload
+        console.log("reject", rejectInfo.value)
       })
 
     }
+    const deleteIssue = (issue) => {
+      if (selected.value.status == 0) {
+       // issue.value = issue.value.filter((u) => u.Id !== issue.value.Id);
+        confirm.require({
+          message: "Hazırlanan kavramsalı silmek isteediğinizden emin misiniz?",
+          header: "Onay Ver",
+          icon: "pi pi- exclamation-triangle",
+          accept: () => {
+            IssuesService.deleteIssue(selected.value.Id).then(response => {
+              if (response.data.Success) {
+                /* users.value.splice(users.value.indexOf(selected.value),1)*/
+                issue.add({severity: 'success', summary: 'Kavramsal Silindi', detail: 'Başarılı', life: 3000});
 
+              }
+            })
+          },
+          reject: () => {
+            issue.add({severity: 'warn', summary: 'Kavramsal Silinemedi', detail: 'Başarısız', life: 3000});
+          }
+        })
+      }
+    };
     const viewIssue = () => {
       router.push({
         name: 'issueCreate',
         path: '/issueCreate',
-        params: {data: selected.value.Id, status: selected.value.status,nameData:selected.value.FullName}
+        params: {data: selected.value.Id, status: selected.value.status,nameData:selected.value.FullName,comingName:selected.value.FullName
+          ,comingDepartment:selected.value.DepartmentName,comingRole:selected.value.RoleName}
       })
     }
     watch(() => selected.value, (value) => {
@@ -189,7 +241,7 @@ export default {
       cm,
       openRejectDialog,
       rejectShow,
-      onRowContextMenu,
+      onRowContextMenu,deleteIssue
     }
   }
 }

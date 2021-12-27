@@ -3,13 +3,14 @@
 
     <div class="p-card-title relative">
       <h5 class="text-center mb-4">ÖN KOŞUL BİLGİLERİ</h5>
-      <Button class="p-button-text absolute top-0 left-0" icon="pi pi-plus" type="button" @click="openPrecondition "
+      <Button class="p-button-text absolute top-0 left-0" icon="pi pi-plus" type="button" @click="openUpdateDialog "
               label="Ön Koşul Ekle" :disabled="status >0 && status <9"/>
     </div>
 
 
     <DataTable :value="preconditionList"
                dataKey="LineNo" selectionMode="single"
+               v-model:selection="selectedPrecondition"
                contextMenu v-model:contextMenuSelection="selectedPrecondition" @rowContextmenu="onRowContextMenu"
                responsiveLayout="scroll"
                showGridlines>
@@ -48,8 +49,11 @@
 
 
       <template #footer>
-        <Button class="p-button-text" icon="pi pi-times" label="İptal" @click="preconditionCreateDialog=false"/>
-        <Button class="p-button-text" icon="pi pi-check" label="Kaydet" @click="savePrecondition"/>
+        <Button class="p-button-text" icon="pi pi-times" label="İptal" @click="cancelButton"/>
+        <Button v-if="updateButton" class="p-button-text" icon="pi pi-check" label="Güncelle"
+                @click="updateSelected"/>
+
+        <Button v-else class="p-button-text" icon="pi pi-check" label="Kaydet" @click="savePrecondition"/>
       </template>
     </Dialog>
 
@@ -71,7 +75,7 @@ export default {
   },
   setup(props) {
     const {preconditionList} = toRefs(props)
-
+    const updateButton = ref(false)
     const keyIndex = ref(0)
     const selectedPrecondition = ref(null)
     const preconditionCreateDialog = ref(false)
@@ -81,6 +85,14 @@ export default {
 
     const cm = ref()
     const menuModel = ref([
+      {
+        label: "Düzelt",
+        icon:"pi pi-pencil",
+        command: () => {
+          updatePrecondition()
+        }
+
+      },
       {
         label: "Sil",
         icon: "pi pi-trash",
@@ -96,10 +108,24 @@ export default {
       cm.value.show(event.originalEvent);
     };
 
-    const openPrecondition = () => {
+    const openUpdateDialog = () => {
       preconditionCreateDialog.value = true
+      //   selectedPrecondition.value = []
     }
-
+    const updatePrecondition = () => {
+      newPrecondition.value = selectedPrecondition.value.Explanation
+      updateButton.value = true
+      openUpdateDialog()
+    }
+    const updateSelected = () => {
+      preconditionList.value[selectedPrecondition.value.LineNo - 1].Explanation = newPrecondition.value,
+          cancelButton()
+    }
+    const cancelButton = () => {
+      preconditionCreateDialog.value = false
+      updateButton.value = false
+      newPrecondition.value = ''
+    }
     const savePrecondition = () => {
       if (preconditionList.value.length > 0) {
         keyIndex.value = preconditionList.value.length
@@ -125,16 +151,20 @@ export default {
     }
 
     return {
+      updateButton,
       selectedPrecondition,
       preconditionCreateDialog,
       state,
-      openPrecondition,
+      openUpdateDialog,
       newPrecondition,
       savePrecondition,
       deletePrecondition,
       menuModel,
       cm,
-      onRowContextMenu
+      cancelButton,
+      onRowContextMenu,
+      updateSelected,
+      updatePrecondition
     }
   }
 }

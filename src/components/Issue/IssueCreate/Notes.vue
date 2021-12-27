@@ -10,6 +10,7 @@
 
     <DataTable :value="noteList"
                dataKey="LineNo" selectionMode="single"
+               v-model:selection="selected"
                contextMenu v-model:contextMenuSelection="selected" @rowContextmenu="onRowContextMenu"
                responsiveLayout="scroll"
                showGridlines
@@ -52,8 +53,9 @@
 
 
       <template #footer>
-        <Button class="p-button-text" icon="pi pi-times" label="İptal" @click="createNoteDialog=false"/>
-        <Button class="p-button-text" icon="pi pi-check" label="Kaydet" @click="saveNotes"/>
+        <Button class="p-button-text" icon="pi pi-times" label="İptal" @click="cancelButton"/>
+        <Button v-if="updateButton" class="p-button-text" icon="pi pi-check" label="Güncelle" @click="selectedUpdate"/>
+        <Button v-else class="p-button-text" icon="pi pi-check" label="Kaydet" @click="saveNotes"/>
       </template>
     </Dialog>
 
@@ -77,7 +79,7 @@ export default {
   setup(props) {
     const selected = ref(null)
     const createNoteDialog = ref(false)
-
+    const updateButton = ref(false)
     const {noteList} = toRefs(props)
     const newExplanation = ref('')
     const keyIndex = ref(0)
@@ -86,6 +88,13 @@ export default {
     const cm = ref()
     const menuModel = ref([
       {
+        label: "Düzelt",
+        icon:"pi pi-pencil",
+        command: () => {
+          openUpdateDialog()
+        }
+      },
+      {
         label: "Sil",
         icon: "pi pi-trash",
         command: () => {
@@ -93,11 +102,25 @@ export default {
         }
       }
     ])
-
+    const cancelButton = () => {
+      createNoteDialog.value = false
+      updateButton.value = false
+      newExplanation.value = ''
+    }
     const createNote = () => {
       createNoteDialog.value = true
     }
+    const openUpdateDialog = () => {
+      newExplanation.value = selected.value.Explanation
+      updateButton.value = true
+      createNote()
 
+    }
+    const selectedUpdate = () => {
+      noteList.value[selected.value.LineNo - 1].Explanation = newExplanation.value
+
+      cancelButton()
+    }
     const deleteNote = () => {
       noteList.value.splice(noteList.value.indexOf(selected.value), 1)
       selected.value = null
@@ -109,9 +132,9 @@ export default {
     }
 
     const saveNotes = () => {
-      if (noteList.value.length > 0) {
+     /* if (noteList.value.length > 0) {
         keyIndex.value = noteList.value.length
-      }
+      }*/
       keyIndex.value += 1
       noteList.value.push({
         Explanation: newExplanation.value,
@@ -128,7 +151,19 @@ export default {
     }
 
     return {
-      selected, createNoteDialog, createNote, saveNotes, newExplanation, deleteNote, menuModel, cm, onRowContextMenu
+      selected,
+      updateButton,
+      createNoteDialog,
+      createNote,
+      saveNotes,
+      newExplanation,
+      deleteNote,
+      menuModel,
+      cm,
+      cancelButton,
+      onRowContextMenu,
+      openUpdateDialog,
+      selectedUpdate
     }
   }
 }
