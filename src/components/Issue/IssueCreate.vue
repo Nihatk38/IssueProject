@@ -1,5 +1,6 @@
 <template>
-  <Dropdown class="p-dropdown mb-2" v-if="status==='9' " v-model="versionInfo" :options="resultVersion" optionValue="Id" optionLabel="VersionNo" placeholder="Önceki Revizyonları İncele"/>
+  <Dropdown class="p-dropdown mb-2" v-if="status==='9' " v-model="versionInfo" :options="resultVersion" optionValue="Id"
+            optionLabel="VersionNo" placeholder="Önceki Revizyonları İncele"/>
 
   <scenario-information
       :scenarios="IssueInfo"
@@ -61,30 +62,36 @@
     </FileUpload>
   </div>
   <div class="grid">
-    <div class="col-5"></div>
     <div class="col-2">
       <router-link to="/issueList">
-        <Button class="p-button  col-4 ml-2">
+        <Button class="p-button-text  col-4 ml-2">
           <i class="pi pi-fw pi-backward mr-2"></i>Geri
         </Button>
       </router-link>
-
     </div>
-    <div class="col-5"></div>
 
-  </div>
+    <div v-if="status === '1' || status === '2' || status === '3' || status === '4'" class="col-10 grid">
+      <div class="col-offset-8 col-2 ">
+        <Button v-if="nameData != tokenInfo && status>0" class="w-full p-button-success" label="Onayla"
+                @click="answerIssue"/>
+      </div>
+      <div class="col-2 ">
+        <Button v-if="nameData != tokenInfo && status>0" class="w-full p-button-danger "
+                label="Reddet"
+                @click="rejectIssue"/>
+      </div>
+    </div>
 
-  <div v-if="status === '1' || status === '2' || status === '3' || status === '4'" class="grid mt-2">
+    <div v-else class="col-10 grid">
+      <div class="col-offset-8 col-2 ">
+        <Button class="w-full p-button-success " label="Kaydet" @click="save"/>
+      </div>
 
-    <Button v-if="nameData != tokenInfo && status>0" class="col-4 p-button-success" label="Onayla" @click="answerIssue"/>
-
-    <Button  v-if="nameData != tokenInfo && status>0"  class="col-4 col-offset-4  p-button-danger " label="Reddet" @click="rejectIssue"/>
-  </div>
-
-  <div v-else class="grid mt-2">
-    <Button class="col-4 p-button-warning" label="Kaydet" @click="save"/>
-    <Button class="col-4 col-offset-4 p-button-success  " label="Kaydet ve Onayla"
-            @click="saveAndConfirm"/>
+      <div class="col-2 ">
+        <Button class="w-full p-button-success p-button-outlined " label="Kaydet & Onayla"
+                @click="saveAndConfirm"/>
+      </div>
+    </div>
   </div>
 
   <Dialog v-model:visible="openRejectDialog" :modal="true" :style="{width:'800px'}" class="p-fluid"
@@ -120,7 +127,7 @@ import AuthService from "@/service/auth.service";
 import IssuesService from "@/service/issueService";
 
 export default {
-  props: ['data', 'status','nameData','comingName','comingDepartment','comingRole'],
+  props: ['data', 'status', 'nameData', 'comingName', 'comingDepartment', 'comingRole'],
   components: {ActivityList, Precondition, RelevantDepartments, ScenarioInformation, Notes},
   setup(props) {
 
@@ -137,10 +144,10 @@ export default {
     const IssueFile = ref(null)
     const urlUpload = ref('')
     const showButton = ref(false)
-    const versionInfo=ref('');
-    const resultVersion=ref({});
-    const arrayErrors=ref([]);
-    const rules = computed(()=> {
+    const versionInfo = ref('');
+    const resultVersion = ref({});
+    const arrayErrors = ref([]);
+    const rules = computed(() => {
       return {
         IssueRoleInfos: {required},
         Summary: {required},
@@ -167,27 +174,37 @@ export default {
       }
     }
     ResetValue();
-    IssuesService.getVersionInfo(props.data).then( response => {
+    IssuesService.getVersionInfo(props.data).then(response => {
       resultVersion.value = response.data.Payload
     })
-    const back = () =>{
+    const back = () => {
       router.push("/issueList")
     }
-    const v$ = useVuelidate(rules, computed(()=>IssueInfo.value))
+    const v$ = useVuelidate(rules, computed(() => IssueInfo.value))
     const tokenInfo = ref(AuthService.getFromTokenFullName());
 
     const onUpload = (e) => {
-      if(e.xhr.responseText == "MUKERRERKAYIT")
-        toast.add({severity: 'info', summary: 'Başarısız', detail: 'Bu Dosya isminden Daha Önceden Kayıt Tespit Edildi.Lütfen Başka Bir Dosya Ekleyin Veya Dosya İsmini Değiştirin!', life: 5000});
-      else if (e.xhr.responseText == "ONAY"){
+      if (e.xhr.responseText == "MUKERRERKAYIT")
+        toast.add({
+          severity: 'info',
+          summary: 'Başarısız',
+          detail: 'Bu Dosya isminden Daha Önceden Kayıt Tespit Edildi.Lütfen Başka Bir Dosya Ekleyin Veya Dosya İsmini Değiştirin!',
+          life: 5000
+        });
+      else if (e.xhr.responseText == "ONAY") {
         toast.add({severity: 'success', summary: 'Başarılı', detail: 'Dosya Eklendi', life: 3000});
         IssueInfo.value.IssueAttachmentInfos = e.files.map((f) => {
           return {
             FileName: f.name,
           }
         })
-      }else if(e.xhr.responseText == "BASARISIZ"){
-        toast.add({severity: 'error', summary: 'Başarısız', detail: 'Dosya Yüklenemedi Lütfen Yüklemek İstediğiniz Dosyayı Kontrol Edin! ', life: 5000});
+      } else if (e.xhr.responseText == "BASARISIZ") {
+        toast.add({
+          severity: 'error',
+          summary: 'Başarısız',
+          detail: 'Dosya Yüklenemedi Lütfen Yüklemek İstediğiniz Dosyayı Kontrol Edin! ',
+          life: 5000
+        });
       }
 
     }
@@ -195,19 +212,19 @@ export default {
     const saveAndConfirm = () => {
       IssueInfo.value.IsSaveWithConfirm = true
 
-      console.log("bırasus",IssueInfo.value)
+      console.log("bırasus", IssueInfo.value)
       save()
     }
 
     const save = () => {
       submitted.value = true;
       v$.value.$validate()
-      arrayErrors.value.length=(v$.value.$errors.length)
-      console.log("v$ yeri",v$.value)
-      console.log("array yeri",arrayErrors.value)
+      arrayErrors.value.length = (v$.value.$errors.length)
+      console.log("v$ yeri", v$.value)
+      console.log("array yeri", arrayErrors.value)
       if (!v$.value.$error) {
-        if(IssueInfo.value.IssueRelevantDepartmentInfos.length>0){
-          if(IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId.length>0){
+        if (IssueInfo.value.IssueRelevantDepartmentInfos.length > 0) {
+          if (IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId.length > 0) {
             IssueInfo.value.IssueRelevantDepartmentInfos = IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId.map((m) => {
               return {
                 DepartmentId: m.Id
@@ -216,13 +233,13 @@ export default {
           }
         }
 
-       if(IssueInfo.value.IssueRoleInfos.length>0){
-         IssueInfo.value.IssueRoleInfos = IssueInfo.value.IssueRoleInfos.map((m) => {
-           return {
-             RoleId: m.Id
-           }
-         })
-       }
+        if (IssueInfo.value.IssueRoleInfos.length > 0) {
+          IssueInfo.value.IssueRoleInfos = IssueInfo.value.IssueRoleInfos.map((m) => {
+            return {
+              RoleId: m.Id
+            }
+          })
+        }
 
         IssuesService.addIssue(IssueInfo.value)
             .then(response => {
@@ -232,16 +249,26 @@ export default {
                 toast.add({severity: 'success', summary: 'Başarılı', detail: 'İş Kaydı Oluşturuldu', life: 3000});
 
               } else {
-                toast.add({severity: 'error', summary: 'Hata', detail: 'Beklenmedik Bir Hata Oluştu.Lütfen Daha Sonra Tekrar Deneyin.', life: 3000});
+                toast.add({
+                  severity: 'error',
+                  summary: 'Hata',
+                  detail: 'Beklenmedik Bir Hata Oluştu.Lütfen Daha Sonra Tekrar Deneyin.',
+                  life: 3000
+                });
               }
             }).catch(e => {
           console.log(e)
         })
         router.push("/issueList")
-      }else {
+      } else {
         window.scrollTo(0, 0);
         v$.value.$reset();
-        toast.add({severity: 'error', summary: 'Hata', detail: 'İş Kaydı Oluşturulamadı.Lütfen Zorunlu Alanları Doldurun.', life: 3000});
+        toast.add({
+          severity: 'error',
+          summary: 'Hata',
+          detail: 'İş Kaydı Oluşturulamadı.Lütfen Zorunlu Alanları Doldurun.',
+          life: 3000
+        });
       }
 
     }
@@ -253,12 +280,12 @@ export default {
 
           IssueInfo.value = response.data.Payload
 
-           IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId = response.data.Payload.IssueRelevantDepartmentInfos.map(f => {
-             return {
-               Definition: f.Department.Definition,
-               Id: f.DepartmentId
-             }
-           })
+          IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId = response.data.Payload.IssueRelevantDepartmentInfos.map(f => {
+            return {
+              Definition: f.Department.Definition,
+              Id: f.DepartmentId
+            }
+          })
           IssueInfo.value.IssueRoleInfos = response.data.Payload.IssueRoleInfos.map(f => {
             return {
               Id: f.Role.Id,
@@ -269,8 +296,8 @@ export default {
           ResetValue();
       })
     }
-    watch(()=>versionInfo.value,(value)=>{
-      console.log("selected version",value)
+    watch(() => versionInfo.value, (value) => {
+      console.log("selected version", value)
       IssuesService.getSelectedIssue(value).then(response => {
         if (response.data.Success) {
           console.log("response.data.Payload", response.data)
@@ -366,7 +393,7 @@ export default {
       versionInfo,
       resultVersion,
       saveAndConfirm,
-      back,tokenInfo,arrayErrors
+      back, tokenInfo, arrayErrors
     }
   }
 }
