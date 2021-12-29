@@ -40,30 +40,37 @@ const IssuesService = {
     getRejectInfo(Id) {
         return client().get(`/api/Issue/RejectReason/${Id}`)
     },
-        getRejectReason(issueId)
-        {
-            return client().get(`/api/Issue/RejectReason/${issueId}`)
-        },
-        getVersionInfo(Id)
-        {
-            return client().get(`/api/Issue/VersionInfo/${Id}`)
-        },
-        getTitleInfo(TitleControl)
-        {
-            return client().get(`/api/Issue/TitleInfo/${TitleControl}`)
-        },
-        getSubTitleInfo(titleId)
-        {
-            return client().get(`/api/Issue/SubTitleInfo/${titleId}`)
-        },
-        deleteIssue(Id) {
+    getRejectReason(issueId)
+    {
+        return client().get(`/api/Issue/RejectReason/${issueId}`)
+    },
+    getVersionInfo(Id)
+    {
+        return client().get(`/api/Issue/VersionInfo/${Id}`)
+    },
+    getTitleInfo(TitleControl)
+    {
+        return client().get(`/api/Issue/TitleInfo/${TitleControl}`)
+    },
+    getTitleInfoByDepartmentId(DepartmentId)
+    {
+        return client().get(`/api/Issue/TitleInfoByDepartmentId/${DepartmentId}`)
+    },
+    getSubTitleInfo(titleId)
+    {
+        return client().get(`/api/Issue/SubTitleInfo/${titleId}`)
+    },
+    deleteIssue(Id) {
         return client().delete(`/api/Issue/Delete/${Id}`)
     },
     addTitle(title) {
-        return client().post(`api/Issue/AddTitle`, title)
+        return client().post(`api/Issue/AddSubtitle`, title)
     },
     updateTitle(title) {
         return client().put(`api/title/UpdateTitle`, title)
     },
+    uploadFile(formData){
+        return client().post('api/Issue/Upload', formData);
+    }
 }
 export default IssuesService;

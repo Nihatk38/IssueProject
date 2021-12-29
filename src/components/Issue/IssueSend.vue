@@ -95,6 +95,7 @@ import IssuesService from "@/service/issueService";
 
 import Functions from "@/auxiliary/directive/functions";
 import {useConfirm} from "primevue/useconfirm";
+import {useToast} from "primevue/usetoast";
 
 
 export default {
@@ -103,6 +104,7 @@ export default {
     const rejectShow = ref(false)
     const sends = ref(null)
     const cm = ref()
+    const Toast = useToast()
     const selected = ref(null)
     const openRejectDialog = ref(false)
     const confirmContext = ref(false)
@@ -170,8 +172,9 @@ export default {
       {
         label: "Sil",
          icon: 'pi pi-trash',
+        visible: computed(() => selected.value.status === 9 || selected.value.status ==0),
         command: () => {
-          deleteIssue(selected)
+          deleteIssue()
         }
 
       }
@@ -186,8 +189,8 @@ export default {
       })
 
     }
-    const deleteIssue = (issue) => {
-      if (selected.value.status == 0) {
+    const deleteIssue = () => {
+      if (selected.value.status == 0 || selected.value.status == 9) {
        // issue.value = issue.value.filter((u) => u.Id !== issue.value.Id);
         confirm.require({
           message: "Hazırlanan kavramsalı silmek isteediğinizden emin misiniz?",
@@ -197,13 +200,14 @@ export default {
             IssuesService.deleteIssue(selected.value.Id).then(response => {
               if (response.data.Success) {
                 /* users.value.splice(users.value.indexOf(selected.value),1)*/
-                issue.add({severity: 'success', summary: 'Kavramsal Silindi', detail: 'Başarılı', life: 3000});
-
+                Toast.add({severity: 'success', summary: 'Kavramsal Silindi', detail: 'Başarılı', life: 3000});
+                sends.value.splice(sends.value.indexOf(selected.value),1)
               }
             })
+
           },
           reject: () => {
-            issue.add({severity: 'warn', summary: 'Kavramsal Silinemedi', detail: 'Başarısız', life: 3000});
+            Toast.add({severity: 'warn', summary: 'Kavramsal Silinemedi', detail: 'Başarısız', life: 3000});
           }
         })
       }

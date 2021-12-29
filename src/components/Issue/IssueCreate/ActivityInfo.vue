@@ -49,20 +49,20 @@
   <Dialog v-model:visible="createActivityDialog" :modal="true" :style="{width: '800px'}" :visible="true"
           class="p-fluid">
     <template #header="">
-      <p>Yeni Akış oluştur--> {{ onNodeSelect }}</p>
+      <p>Yeni Akış oluştur </p>
     </template>
 
-    <div class="p-field mb-2">
+    <div class="p-field mb-2 max-w-screen">
       <label for="Definition">Tanım</label>
       <Textarea id="Definition" v-model="activity.Definition" :auto-resize="true" maxLength="2000"/>
-      <small v-if="(v$.Definition.$invalid && submitted)" class="p-error">Tanım Boş Bırakılamaz.</small>
+<!--      <small v-if="(v$.Definition.$invalid && submitted)" class="p-error">Tanım Boş Bırakılamaz.</small>-->
     </div>
 
     <div class="p-field mb-4">
       <!--      <label for="RoleId">Rol</label>-->
       <Dropdown v-model="activity.RoleId" :options="resultRoles" optionLabel="Definition" optionValue="Id"
                 placeholder="Rol Seçiniz."/>
-      <small v-if="(v$.RoleId.$invalid && submitted)" class="p-error">Rol Boş Bırakılamaz.</small>
+<!--      <small v-if="(v$.RoleId.$invalid && submitted)" class="p-error">Rol Boş Bırakılamaz.</small>-->
     </div>
 
     <div class="p-field mb-4">
@@ -89,8 +89,6 @@
 <script>
 import {computed, onMounted, ref, watch} from "vue";
 import UsersService from "@/service/users.service";
-import useVuelidate from "@vuelidate/core";
-import {required} from "@vuelidate/validators";
 import list from "@/auxiliary/lists"
 
 export default {
@@ -124,11 +122,7 @@ export default {
     const mediums = ref(list.Mediums);
     let nodeList = [];
     let nodeIndex = 0;
-    const rules = ref({
-      RoleId: {required},
-      Definition: {required}
-    })
-    const v$ = useVuelidate(computed(() => rules.value), activity.value)
+
 
     watch(() => props.IssueActivityDetailInfos, () => {
       fillData();
@@ -221,7 +215,7 @@ export default {
       {
         label: "Yukarı Taşı",
         icon: "pi pi-arrow-up",
-        disabled: false,
+        disabled: computed(() => selectedNode.value == null),
         command: () => {
           moveNodeUp()
         }
@@ -229,13 +223,12 @@ export default {
       {
         label: "Aşağı Taşı",
         icon: "pi pi-arrow-down",
-        disabled: false,
+        disabled: computed(() => selectedNode.value == null),
         command: () => {
           moveNodeDown()
         }
       },
     ])
-
     const createNote = () => {
       createActivityDialog.value = true
     }
@@ -284,8 +277,6 @@ export default {
 
     const addNode = () => {
       submitted.value = true;
-      v$.value.$validate();
-      if (!v$.value.$error) {
         submitted.value = false;
         if (parentNode.value) {
           let detailsInfo = [...props.IssueActivityDetailInfos];
@@ -326,7 +317,7 @@ export default {
         createActivityDialog.value = false
         activity.value = {};
 
-      }
+
     }
 
     const updateSelected = () => {
@@ -504,11 +495,10 @@ export default {
       onNodeUnselect,
       submitted,
       mediums,
-      v$,
-      rules,
       updateSelected,
       updateButton,
-      cancelButton
+      cancelButton,
+      selectedNode
     }
   }
 }

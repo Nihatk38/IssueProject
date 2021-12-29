@@ -198,7 +198,7 @@ export default {
             if (response.data.Success){
              /* users.value.splice(users.value.indexOf(selected.value),1)*/
               toast.add({severity: 'success', summary: 'Kullanıcı Silindi', detail:'Başarılı' ,life:3000});
-
+              users.value.splice(users.value.indexOf(selected.value),1)
             }
           })
         },

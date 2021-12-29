@@ -3,12 +3,12 @@
           class="p-fluid">
     <div class="field">
       <label for="DepartmentId">Departman*</label>
-      <Dropdown v-model="state.DepartmentId" :options="resultDepartment" optionValue="Id" optionLabel="Definition"/>
+      <Dropdown v-model="DepartmentId" :options="resultDepartment" optionValue="Id" optionLabel="Definition"/>
     </div>
 
     <div class="field">
-      <label for="DepartmentId">Title*</label>
-      <Dropdown v-model="state.Title" :options="resultTitle" optionValue="Id" optionLabel="Subject"/>
+      <label for="Title">Title*</label>
+      <Dropdown v-model="state.Id" :options="resultTitle" optionValue="Id" optionLabel="Subject"/>
     </div>
 
     <div class="field">
@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import {onMounted, ref} from "vue";
+import {onMounted, ref, watch} from "vue";
 
 import IssuesService from "@/service/issueService";
 import UsersService from "@/service/users.service";
@@ -47,24 +47,28 @@ export default {
   },
   name: "TitleCreate",
   setup(props) {
-    const state = ref([])
+    const state = ref({
+      Id:'',
+      Subtitle:''
+    })
+    const DepartmentId = ref('')
     const resultTitle = ref([])
-    const DepartmentId = ref('');
-    const resultDepartment = ref([])
+    const resultDepartment = ref(null)
 
 
     onMounted(async () => {
-      await IssuesService.getTitleInfo(true).then(response => {
 
-        resultTitle.value = response.data.Payload
-        console.log("result",resultTitle.value)
-      })
       await UsersService.getDepartmentList().then(response => {
         resultDepartment.value = response.Payload
         console.log("resultDepartment",resultDepartment.value)
       })
     })
-
+    watch(() => DepartmentId.value,(DepartmentId) =>{
+        IssuesService.getTitleInfoByDepartmentId(DepartmentId).then(response =>{
+          resultTitle.value = response.data.Payload
+          console.log("result",resultTitle.value)
+        })
+    })
 
     const saveTitle = () => {
       if (props.operation === 1) {
@@ -77,12 +81,17 @@ export default {
         IssuesService.updateTitle(state.value).then(response => {
           if (response.data.Success) {
             props.closeDialog(true)
-            console.log("asdasd")
           }
         })
       }
     }
-    return {state, saveTitle, resultTitle, resultDepartment,DepartmentId}
+    return {
+      state,
+      saveTitle,
+      resultTitle,
+      resultDepartment,
+      DepartmentId
+    }
   }
 }
 </script>
