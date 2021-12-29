@@ -6,9 +6,9 @@
 
     </div>
     <slot name="activitiyinfos"></slot>
-<!--    <div v-if="(v$.IssueActivityInfos.$invalid && submitted && !activityInfoSubmitted )" class="p-error mb-2">Temel Akış
-      Boş Bırakılamaz.
-    </div>-->
+    <!--    <div v-if="(v$.IssueActivityInfos.$invalid && submitted && !activityInfoSubmitted )" class="p-error mb-2">Temel Akış
+          Boş Bırakılamaz.
+        </div>-->
     <div class="p-card-body">
       <Accordion :activeIndex="accordionIndex" :multiple="false">
         <AccordionTab v-for="activity in IssueActivityInfos" :key="activity.SubActivityNo"
@@ -29,13 +29,13 @@
           <ActivityInfo
               v-model:IssueActivityDetailInfos="activity.IssueActivityDetailInfos"
               :status="status"
-              @submitted="clicked"
           ></ActivityInfo>
 
         </AccordionTab>
       </Accordion>
       <div class="w-full text-center mt-2">
-        <Button class="p-button-text" icon="pi pi-plus" type="button" @click="addActivity " :disabled="status>0 && status<9 "
+        <Button class="p-button-text" icon="pi pi-plus" type="button" @click="addActivity "
+                :disabled="status>0 && status<9 "
                 label="Alternatif Akış Ekle"/>
       </div>
     </div>
@@ -77,9 +77,7 @@ export default {
     const detailInfos = ref([])
     const activityInfoSubmitted = ref(false)
     const toast = useToast()
-    const clicked = (submitted) => {
-      activityInfoSubmitted.value = submitted
-    }
+
     if (!IssueActivityInfos.value.length)
       IssueActivityInfos.value.push({
         Type: 1,
@@ -116,27 +114,26 @@ export default {
 
     const deleteActivity = (activity) => {
       confirm.require({
-        message:"Akışı silmek isteediğinizden emin misiniz?",
-        header:"Onay Ver",
-        icon:"pi pi- exclamation-triangle",
-        accept :() =>{
+        message: "Akışı silmek isteediğinizden emin misiniz?",
+        header: "Onay Ver",
+        icon: "pi pi- exclamation-triangle",
+        accept: () => {
           IssueActivityInfos.value.splice(IssueActivityInfos.value.indexOf(activity), 1)
 
           reorderActivityNo();
           accordionIndex.value = -1;
-          toast.add({severity: 'warn', summary: 'Akış Silindi', detail:'Başarılı' ,life:3000});
+          toast.add({severity: 'warn', summary: 'Akış Silindi', detail: 'Başarılı', life: 3000});
         },
-        reject:()=>{
-          toast.add({severity: 'error', summary: 'Akış Silinemedi', detail:'Başarısız' ,life:3000});
+        reject: () => {
+          toast.add({severity: 'error', summary: 'Akış Silinemedi', detail: 'Başarısız', life: 3000});
         }
       })
     }
 
 
-
     return {
 
-      state, Departments, index, detailInfos, clicked, activityInfoSubmitted, accordionIndex,
+      state, Departments, index, detailInfos, activityInfoSubmitted, accordionIndex,
 
       addActivity, copyActivity, deleteActivity, selected
     }

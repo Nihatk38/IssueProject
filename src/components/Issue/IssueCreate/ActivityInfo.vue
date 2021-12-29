@@ -48,21 +48,25 @@
 
   <Dialog v-model:visible="createActivityDialog" :modal="true" :style="{width: '800px'}" :visible="true"
           class="p-fluid">
+
+
     <template #header="">
-      <p>Yeni Akış oluştur </p>
+      <p>Yeni Akış oluştur--></p>
     </template>
 
     <div class="p-field mb-2 max-w-screen">
       <label for="Definition">Tanım</label>
-      <Textarea id="Definition" v-model="activity.Definition" :auto-resize="true" maxLength="2000"/>
-<!--      <small v-if="(v$.Definition.$invalid && submitted)" class="p-error">Tanım Boş Bırakılamaz.</small>-->
+      <Textarea id="Definition" v-model="v$.Definition.$model" :auto-resize="true" maxLength="2000"
+                :class="{'p-invalid':v$.Definition.$invalid && submitted}"/>
+      <small v-if="(v$.Definition.$invalid && submitted)" class="p-error">Tanım Boş Bırakılamaz.</small>
     </div>
 
     <div class="p-field mb-4">
       <!--      <label for="RoleId">Rol</label>-->
-      <Dropdown v-model="activity.RoleId" :options="resultRoles" optionLabel="Definition" optionValue="Id"
-                placeholder="Rol Seçiniz."/>
-<!--      <small v-if="(v$.RoleId.$invalid && submitted)" class="p-error">Rol Boş Bırakılamaz.</small>-->
+      <Dropdown v-model="v$.RoleId.$model" :options="resultRoles" optionLabel="Definition" optionValue="Id"
+                placeholder="Rol Seçiniz."
+                :class="{'p-invalid':v$.RoleId.$invalid && submitted}"/>
+      <small v-if="(v$.RoleId.$invalid && submitted)" class="p-error">Rol Boş Bırakılamaz.</small>
     </div>
 
     <div class="p-field mb-4">
@@ -80,7 +84,7 @@
     <template #footer>
       <Button class="p-button-text" icon="pi pi-times" label="İptal" @click="cancelButton"/>
       <Button v-if="updateButton" class="p-button-text" icon="pi pi-check" label="Güncelle" @click="updateSelected()"/>
-      <Button v-else class="p-button-text" icon="pi pi-check" label="Kaydet" @click="saveNotes()"/>
+      <Button v-else class="p-button-text" icon="pi pi-check" label="Kaydet" @click="saveNotes(!v$.$invalid)"/>
     </template>
   </Dialog>
 
@@ -90,6 +94,8 @@
 import {computed, onMounted, ref, watch} from "vue";
 import UsersService from "@/service/users.service";
 import list from "@/auxiliary/lists"
+import useVuelidate from "@vuelidate/core";
+import {required} from "@vuelidate/validators";
 
 export default {
   props: {
@@ -105,15 +111,20 @@ export default {
       type: Number
     },
   },
-  emits: ['submitted'],
   setup(props, {emit}) {
+
     const updateButton = ref(false)
     const nodes = ref([])
     const indexNum = ref(null)
     const createActivityDialog = ref(false)
     const selectedNode = ref(null)
     const parentNode = ref(null)
-    const activity = ref({})
+    const activity = ref({
+      Definition: ".",
+      RoleId: ".",
+      Medium: "",
+      Explanation: ""
+    })
     const resultRoles = ref([])
     const childIndex = ref(0);
     const keyIndex = ref(0)
@@ -123,6 +134,13 @@ export default {
     let nodeList = [];
     let nodeIndex = 0;
 
+    const rules = {
+      Definition: {required},
+      RoleId: {required},
+
+    }
+
+    const v$ = useVuelidate(rules, activity)
 
     watch(() => props.IssueActivityDetailInfos, () => {
       fillData();
@@ -240,13 +258,17 @@ export default {
 
     const cancelButton = () => {
       createActivityDialog.value = false
-      activity.value.Definition = ""
-      activity.value.RoleId = ""
+      activity.value.Definition = "."
+      activity.value.RoleId = "."
       activity.value.Medium = ""
       activity.value.Explanation = ""
       updateButton.value = false;
+      submitted.value = false;
+
     }
     const addDetail = (node) => {
+      activity.value.Definition = ""
+      activity.value.RoleId = ""
       parentNode.value = node
       createActivityDialog.value = true
     };
@@ -275,47 +297,58 @@ export default {
       }
     }
 
-    const addNode = () => {
+    const addNode = (isFormValid) => {
+
       submitted.value = true;
-        submitted.value = false;
-        if (parentNode.value) {
-          let detailsInfo = [...props.IssueActivityDetailInfos];
 
-          let foundItem = findByProperty(detailsInfo, val => val.Index === parentNode.value.data.Index);
+      if (!isFormValid) {
+        return
+      }
+      console.log("Activitiy1", activity.value)
+      if (parentNode.value) {
+        let detailsInfo = [...props.IssueActivityDetailInfos];
 
-          if (foundItem) {
-            foundItem.IssueActivityDetailInfos = foundItem.IssueActivityDetailInfos || [];
-            foundItem.IssueActivityDetailInfos.push({
-              LineNo: 0,
-              Definition: activity.value.Definition,
-              RoleId: activity.value.RoleId,
-              Medium: activity.value.Medium,
-              Explanation: activity.value.Explanation,
-              IssueActivityDetailInfos: []
-            })
-          }
+        let foundItem = findByProperty(detailsInfo, val => val.Index === parentNode.value.data.Index);
 
-          emit('update:IssueActivityDetailInfos', detailsInfo);
-
-          parentNode.value = null;
-
-        } else {
-
-          keyIndex.value += 1;
-
-          let detailsInfo = [...props.IssueActivityDetailInfos];
-          detailsInfo.push({
-            LineNo: (keyIndex.value).toString(),
+        if (foundItem) {
+          foundItem.IssueActivityDetailInfos = foundItem.IssueActivityDetailInfos || [];
+          foundItem.IssueActivityDetailInfos.push({
+            LineNo: 0,
             Definition: activity.value.Definition,
             RoleId: activity.value.RoleId,
             Medium: activity.value.Medium,
             Explanation: activity.value.Explanation,
             IssueActivityDetailInfos: []
           })
-          emit('update:IssueActivityDetailInfos', detailsInfo);
         }
-        createActivityDialog.value = false
-        activity.value = {};
+
+        emit('update:IssueActivityDetailInfos', detailsInfo);
+
+        parentNode.value = null;
+        submitted.value = false;
+        cancelButton()
+        console.log("Activitiy2", activity.value)
+
+
+      } else {
+
+        keyIndex.value += 1;
+
+        let detailsInfo = [...props.IssueActivityDetailInfos];
+        detailsInfo.push({
+          LineNo: (keyIndex.value).toString(),
+          Definition: activity.value.Definition,
+          RoleId: activity.value.RoleId,
+          Medium: activity.value.Medium,
+          Explanation: activity.value.Explanation,
+          IssueActivityDetailInfos: []
+        })
+        emit('update:IssueActivityDetailInfos', detailsInfo);
+      }
+      createActivityDialog.value = false
+      cancelButton()
+      submitted.value = false;
+      console.log("Activitiy3", activity.value)
 
 
     }
@@ -478,6 +511,7 @@ export default {
     });
     return {
       createActivityDialog,
+      v$,
       createNote,
       activity,
       indexNum,
