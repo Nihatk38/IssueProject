@@ -38,10 +38,9 @@ export default {
         UsersService.getUser(AuthService.getUserId()).then(response =>{
           userInfo.value=response.data.Payload
           departmentList.value = categoriesDepartment.value.filter(department=> department.Id !=userInfo.value.DepartmentId);
-          console.log("userInfo",userInfo.value)
 
         })
-      console.log("categoriesDepartment",categoriesDepartment.value)
+
 
       })
 

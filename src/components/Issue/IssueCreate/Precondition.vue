@@ -131,7 +131,6 @@ export default {
         keyIndex.value = preconditionList.value.length
       }
       keyIndex.value += 1;
-      console.log("key",keyIndex.value)
       preconditionList.value.push({
         Explanation: newPrecondition.value,
         LineNo: parseInt(keyIndex.value)

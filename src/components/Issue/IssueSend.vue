@@ -185,7 +185,6 @@ export default {
       IssuesService.getRejectInfo(selected.value.Id).then(response => {
 
         rejectInfo.value = response.data.Payload
-        console.log("reject", rejectInfo.value)
       })
 
     }

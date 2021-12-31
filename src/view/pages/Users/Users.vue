@@ -116,7 +116,6 @@ export default {
 
       const getUsers =() =>{
         UsersService.getUserList().then(response =>{
-          console.log("Users",response.Payload)
           users.value=response.Payload.map((data)=>{
             return{
               Id:data.Id,
@@ -177,11 +176,6 @@ export default {
         }
       },
 
-      {
-        label:"Kapat",
-        icon:"pi pi-power-off"
-      },
-
     ])
     const onRowContextMenu = (event) => {
       menu.value.show(event.originalEvent);
@@ -217,6 +211,8 @@ export default {
       'EmailAddress':{operator:FilterOperator.AND,constraints:[{value:null,matchMode: FilterMatchMode.STARTS_WITH}]},
       'DepartmentName':{operator:FilterOperator.AND,constraints:[{value:null,matchMode: FilterMatchMode.STARTS_WITH}]},
       'RoleName':{operator:FilterOperator.AND,constraints:[{value:null,matchMode: FilterMatchMode.STARTS_WITH}]},
+      'IsManager':{operator:FilterOperator.AND,constraints:[{value:null,matchMode: FilterMatchMode.STARTS_WITH}]},
+      'IsKeyUser':{operator:FilterOperator.AND,constraints:[{value:null,matchMode: FilterMatchMode.STARTS_WITH}]},
     })
     return{
       selected,users,filters1,createNewUser,createUserDialog,closeUserDialog,selectedOperation,updateUser,

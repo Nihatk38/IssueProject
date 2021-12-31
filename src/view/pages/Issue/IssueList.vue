@@ -42,7 +42,6 @@ export default {
     const plus =ref(0)
     const renderComponent=computed(() => plus.value +1)
 
-    console.log("render",renderComponent.value)
 
    // root.$nextTick(() => {renderComponent.value = true;});
 

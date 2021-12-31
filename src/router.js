@@ -5,7 +5,7 @@ import DepartmentList from "@/view/pages/Departments/DepartmentList";
 import IssueList from "@/view/pages/Issue/IssueList";
 import IssueCreate from "@/components/Issue/IssueCreate";
 import AuthService from "@/service/auth.service";
-import TitleList from "@/components/Title/TitleList";
+import TitleList from "@/view/pages/Title/TitleList";
 import Login from "@/view/LoginView";
 import ContentView from "@/view/ContentView";
 

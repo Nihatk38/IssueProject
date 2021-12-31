@@ -126,7 +126,6 @@ export default {
         }
       },
     ])
-    console.log("coming",comingList.value)
     const viewIssue = () => {
       router.push({
         name: 'issueCreate',

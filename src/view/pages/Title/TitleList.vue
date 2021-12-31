@@ -2,7 +2,7 @@
   <div class="card">
     <h5>Konu Listesi</h5>
     <div class="card">
-      <DataTable :value="users" v-model:selection="selected" selectionMode="single" dataKey="Id"
+      <DataTable :value="titles" v-model:selection="selected" selectionMode="single"
                  @rowContextmenu="onRowContextMenu"
                  responsiveLayout="scroll" :scrollable="true" scrollHeight="400px" v-model:filters="filters1"
                  filterDisplay="menu" class="p-datatable-users" showGridlines>
@@ -13,8 +13,9 @@
                     @click="createNewTitle"/>
             <title-create
                 v-if="createUserDialog"
-                :close-dialog="closeUserDialog"
+                :close-dialog="closeTitleDialog"
                 :subtitle-id="selected ? selected.Id : 0"
+                :selectedValue="selected"
                 :operation="selectedOperation"
             ></title-create>
 
@@ -26,50 +27,54 @@
         </template>
 
 
-        <Column field="DepartmanName" header="DepartmanName">
+        <Column field="DepartmentName" header="Departman İsmi">
           <template #body="{data}">
-            {{ data.DepartmanName }}
+            {{ data.DepartmentName }}
           </template>
           <template #filter="{filterModel}">
             <InputText type="text" v-model="filterModel.value" class="p-column-filter" placeholder="Search by name"/>
           </template>
         </Column>
 
-        <Column field="Title" header="Title">
+        <Column field="TitleSubject" header="Konu">
           <template #body="{data}">
-            {{ data.Title }}
+            {{ data.TitleSubject }}
           </template>
           <template #filter="{filterModel}">
             <InputText type="text" v-model="filterModel.value" class="p-column-filter" placeholder="Search by name"/>
           </template>
         </Column>
 
-        <Column field="Subtitle" header="Subtitle">
+        <Column field="Subject" header="Alt Konu Başlığı">
           <template #body="{data}">
-            {{ data.Subtitle }}
+            {{ data.Subject }}
           </template>
           <template #filter="{filterModel}">
             <InputText type="text" v-model="filterModel.value" class="p-column-filter" placeholder="Search by name"/>
           </template>
         </Column>
+        <ContextMenu :model="menuModel" ref="menu" />
       </DataTable>
     </div>
   </div>
 </template>
 
 <script>
-import {ref} from "vue";
+import {ref,onMounted} from "vue";
 import {FilterMatchMode, FilterOperator} from "primevue/api";
 import TitleCreate from "@/components/Title/TitleCreate";
+import IssuesService from "@/service/issueService";
 
 export default {
   components: {TitleCreate},
   name: "TitleList",
   setup() {
-
+    onMounted(()=>{
+      getTitles()
+    })
     const selected = ref(null)
     const selectedOperation = ref(1)
-    const users = ref(null)
+    const titles = ref(null)
     const createUserDialog = ref(false)
     const menu = ref()
 
@@ -82,17 +87,13 @@ export default {
         }
       },
       {
-        label: "Güncelle",
+        label: "Düzelt",
         icon: "pi pi-pencil",
         command: () => {
           updateTitle(selected)
         }
       },
 
-      {
-        label: "Kapat",
-        icon: "pi pi-power-off"
-      },
 
     ])
     const onRowContextMenu = (event) => {
@@ -105,24 +106,26 @@ export default {
     }
 
     const updateTitle = () => {
-      //  selected.value={...data}
+      console.log("selected",selected.value)
       selectedOperation.value = 2
       createUserDialog.value = true
     }
 
-    const closeUserDialog = (refresh) => {
+    const closeTitleDialog = () => {
       createUserDialog.value = false
-      if (refresh)
-        getTitles()
+      getTitles()
+
     }
     const getTitles = () => {
-
+      IssuesService.getAllTitleInfo().then(response =>{
+        titles.value = response.data.Payload;
+      })
     }
 
     const filters1 = ref({
       'global': {value: null, matchMode: FilterMatchMode.CONTAINS},
-      'Title': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
-      'Subtitle': {
+      'TitleSubject': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
+      'Subject': {
         operator: FilterOperator.AND,
         constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]
       },
@@ -135,7 +138,7 @@ export default {
 
 
     return {
-      selected, users, filters1, createNewTitle, createUserDialog, closeUserDialog, selectedOperation, updateTitle,
+      selected, titles, filters1, createNewTitle, createUserDialog, closeTitleDialog, selectedOperation, updateTitle,
       menuModel, onRowContextMenu, menu, getTitles
     }
   }

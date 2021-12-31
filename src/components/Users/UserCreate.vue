@@ -1,6 +1,6 @@
 <template>
 
-    <Dialog  :visible="true" :modal="true" :style="{width: '450px'}" header="Yeni Kullanıcı Oluştur"
+    <Dialog @update:visible="closeDialog" :visible="true" :modal="true" :style="{width: '450px'}" header="Yeni Kullanıcı Oluştur"
     class="p-fluid">
 
         <form class="p-fluid" @submit.prevent="saveUser(!v$.$invalid)">
@@ -100,15 +100,7 @@
           </div>
           <Button label="Kaydet" icon="pi pi-check" class="p-button-success p-button-outlined mb-2"  type="Submit"/>
             <Button label="İptal" icon="pi pi-times" class="p-button-danger p-button-outlined" @click="closeDialog"/>
-
-
-
           </form>
-
-
-
-
-
     </Dialog>
 
 </template>
@@ -141,22 +133,27 @@ export default {
     onMounted(  async ()=>{
       await UsersService.getRole().then(response =>{
        resultRole.value= response.Payload
-        console.log("rol tablosu",response)
     })
      await UsersService.getDepartment().then(response =>{
        resultDepartment.value= response.Payload
-        console.log("departman tablosu",response)
     })
       if(props.operation === 1)
         return;
 
       if(!props.userId)
         return;
-      console.log("userId",props.userId)
       await UsersService.getUser(props.userId).then(response=>{
-
         state.value=response.data.Payload;
-        console.log("Güncellemeye gelen state",state.value)
+        if (state.value.IsManager == true) {
+          state.value.IsManager = 1
+        } else {
+          state.value.IsManager = 0
+        }
+        if (state.value.IsKeyUser == true) {
+          state.value.IsKeyUser = 1
+        } else {
+          state.value.IsKeyUser = 0
+        }
       })
 
 
@@ -203,7 +200,6 @@ export default {
 
     const saveUser= (isFormValid)=>{
       submitted.value = true;
-      console.log("stateee",state)
       if (!isFormValid){
         return
       }
@@ -213,14 +209,12 @@ export default {
         UsersService.addUser(state.value).then(response => {
 
           if (response.data.Success)
-            console.log("stateee",state)
             props.closeDialog(true)
         })
       }else{
             UsersService.updateUser(state.value).then(response =>{
               if (response.data.Success){
                 props.closeDialog(true)
-                console.log("asdasd")
 
                 toast.add({severity: 'success', summary: 'Kullanıcı Güncellendi', detail:'Başarılı' ,life:3000});
               }

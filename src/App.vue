@@ -1,6 +1,5 @@
 <template>
   <router-view></router-view>
-
   <Toast></Toast>
   <ConfirmDialog></ConfirmDialog>
 

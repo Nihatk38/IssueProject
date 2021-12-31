@@ -1,6 +1,6 @@
 <template>
 
-  <Dialog :visible="true" :modal="true" :style="{width:'800px'}" class="p-fluid"
+  <Dialog @update:visible="closeDialog" :visible="true" :modal="true" :style="{width:'800px'}" class="p-fluid"
           header="Red Sebebi">
 
     <form class="p-fluid" @submit.prevent="rejectButton(!v$.$invalid)">

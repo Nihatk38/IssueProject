@@ -1,6 +1,5 @@
 <template>
-  <Dropdown class="p-dropdown mb-2" v-if="status==='9' " v-model="versionInfo" :options="resultVersion" optionValue="Id"
-            optionLabel="VersionNo" placeholder="Önceki Revizyonları İncele"/>
+  <Dropdown class="p-dropdown mb-2" v-if="status==='9' " v-model="versionInfo" :options="resultVersion" optionValue="Id" optionLabel="VersionNo" placeholder="Önceki Revizyonları İncele"/>
 
   <scenario-information
       :scenarios="IssueInfo"
@@ -20,7 +19,6 @@
     <template v-slot:roleinfos>
       <small v-if="(v$.IssueRoleInfos.$invalid && submitted)" class="p-error">Aktörler Boş Bırakılamaz.</small>
     </template>
-
 
   </scenario-information>
 
@@ -53,17 +51,32 @@
   ></relevant-departments>
 
   <div class="card cardColor1">
-    <!--    <div v-if="IssueInfo.IssueAttachmentInfos.length>0"
-             class=" card mb-2  ">
-          <div class="border-1 border-20 ">
-            <div class="ml-4">
-              Dosya Adı
+    <div v-if="IssueInfo.IssueAttachmentInfos.length>0"
+         class=" card mb-2  ">
+
+      <div class=" border-1 border-200 p-3">
+        <div class="border-bottom-1 border-500 mb-3 p-1">
+          Dosya Adı
+        </div>
+
+        <div class="text-gray-500 mb-2 border-1 border-300 p-1 " v-for="file in IssueInfo.IssueAttachmentInfos" :key="file.UniqueName">
+          <div class="p-fluid grid">
+            <div class="col-11 ">
+<!--          <span  v-if="data>0"><a target="_blank" :href="`file:///c://Project/Web/Resources/Files/${file.UniqueName}`">{{file.FileName}}</a></span>
+          <span  v-else><a  target="_blank" :href="`file:///c://Project/Web/Resources/temp/${file.UniqueName}`">{{file.FileName}}</a></span>-->
+
+              <span v-if="data>0"><a target="_blank" :href="`https://kavramsal.formsunger.com.tr/Resources/Files/${file.UniqueName}`">{{file.FileName}}</a></span>
+              <span v-else><a target="_blank" :href="`https://kavramsal.formsunger.com.tr/Resources/temp/${file.UniqueName}`">{{file.FileName}}</a></span>
+            </div>
+            <div class="col-1">
+              <Button class=" w-5 text-white p-button p-button-danger" :disabled="status>0 && status<9" @click="deleteFile(file.UniqueName)">X</Button>
             </div>
           </div>
-        <div v-for="file in IssueInfo.IssueAttachmentInfos" :key="file.UniqueName">
-          {{file.FileName}}
+
         </div>
-        </div>-->
+      </div>
+
+    </div>
 
     <FileUpload :disabled="status>0 && status<9" :maxFileSize="1000000" :multiple="true"
                 :url="rootPath+'/api/Issue/upload'"
@@ -111,9 +124,9 @@
   <issue-reject-dialog
       v-if="openRejectDialog"
       :close-dialog="closeRejectDialog"
+      :close="openRejectDialog"
       :data="data">
   </issue-reject-dialog>
-
 
 </template>
 
@@ -196,40 +209,34 @@ export default {
     }
 
     ResetValue();
-    IssuesService.getVersionInfo(props.data).then(response => {
+    IssuesService.getVersionInfo(props.data).then( response => {
       resultVersion.value = response.data.Payload
     })
-    const back = () => {
+    const back = () =>{
       router.push("/issueList")
     }
-    const v$ = useVuelidate(rules, computed(() => IssueInfo.value))
+    const v$ = useVuelidate(rules, computed(()=>IssueInfo.value))
     const tokenInfo = ref(AuthService.getFromTokenFullName());
 
     const onUpload = (e) => {
 
-      console.log(fileUpload.value);
       let formData = new FormData();
 
       e.files.forEach((file) =>
-          formData.append('files', file)
+        formData.append('files',file)
       );
 
       issueService.uploadFile(formData)
-          .then((response) => {
-                if (!response.data.Success)
-                  toast.add({
-                    severity: 'error',
-                    summary: 'Başarısız',
-                    detail: 'Dosya Yüklenemedi Lütfen Yüklemek İstediğiniz Dosyayı Kontrol Edin! ',
-                    life: 5000
-                  });
+      .then((response) =>
+          {
+              if (!response.data.Success)
+                toast.add({severity: 'error', summary: 'Başarısız', detail: 'Dosya Yüklenemedi Lütfen Yüklemek İstediğiniz Dosyayı Kontrol Edin! ', life: 5000});
 
-                toast.add({severity: 'success', summary: 'Başarılı', detail: 'Dosya Eklendi ', life: 5000});
-                IssueInfo.value.IssueAttachmentInfos = response.data.Payload;
-
-                fileUpload.value.clear();
-              }
-          );
+              toast.add({severity: 'success', summary: 'Başarılı', detail: 'Dosya Eklendi ', life: 5000});
+              IssueInfo.value.IssueAttachmentInfos =  [...IssueInfo.value.IssueAttachmentInfos,...response.data.Payload];
+            fileUpload.value.clear();
+          }
+      );
 
       /*
        if(e.xhr.responseText == "MUKERRERKAYIT")
@@ -251,28 +258,51 @@ export default {
       IssueInfo.value.IsSaveWithConfirm = true
       save()
     }
+    const deleteFile = (fileInfo) =>{
 
+      IssuesService.deleteFile(fileInfo,props.data == null ? 0:props.data).then(response =>{
+        if(response.data.Success){
+          console.log("find",findIndexByIdContact(fileInfo))
+          IssueInfo.value.IssueAttachmentInfos.splice(findIndexByIdContact(fileInfo),1)
+          toast.add({severity:'warn',summary:'Başarılı',detail:'Dosya Silindi',life:3000})
+
+        }else{
+          toast.add({severity:'error',summary:'Başarısız',detail:'Dosya Silinemedi',life:3000})
+        }
+      })
+    }
+    const findIndexByIdContact = (fileInfo) => {
+      let index = -1;
+      for (let i = 0; i < IssueInfo.value.IssueAttachmentInfos.length; i++) {
+        if (IssueInfo.value.IssueAttachmentInfos[i].UniqueName === fileInfo) {
+          index = i;
+          break;
+        }
+      }
+
+      return index;
+    };
     const save = () => {
       submitted.value = true;
       v$.value.$validate()
       arrayErrors.value.length = (v$.value.$errors.length)
-      console.log("v$ yeri", v$.value)
+
       if (!v$.value.$error) {
-        if (IssueInfo.value.IssueRelevantDepartmentInfos.length != null && IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId) {
-          IssueInfo.value.IssueRelevantDepartmentInfos = IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId.map((m) => {
-            return {
-              DepartmentId: m.Id
-            }
-          })
+        if(IssueInfo.value.IssueRelevantDepartmentInfos.length != null && IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId){
+            IssueInfo.value.IssueRelevantDepartmentInfos = IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId.map((m) => {
+              return {
+                DepartmentId: m.Id
+              }
+            })
 
         }
-        if (IssueInfo.value.IssueRoleInfos.length > 0) {
-          IssueInfo.value.IssueRoleInfos = IssueInfo.value.IssueRoleInfos.map((m) => {
-            return {
-              RoleId: m.Id
-            }
-          })
-        }
+       if(IssueInfo.value.IssueRoleInfos.length>0){
+         IssueInfo.value.IssueRoleInfos = IssueInfo.value.IssueRoleInfos.map((m) => {
+           return {
+             RoleId: m.Id
+           }
+         })
+       }
 
         IssuesService.addIssue(IssueInfo.value)
             .then(response => {
@@ -282,26 +312,16 @@ export default {
                 toast.add({severity: 'success', summary: 'Başarılı', detail: 'İş Kaydı Oluşturuldu', life: 3000});
 
               } else {
-                toast.add({
-                  severity: 'error',
-                  summary: 'Hata',
-                  detail: 'Beklenmedik Bir Hata Oluştu.Lütfen Daha Sonra Tekrar Deneyin.',
-                  life: 3000
-                });
+                toast.add({severity: 'error', summary: 'Hata', detail: 'Beklenmedik Bir Hata Oluştu.Lütfen Daha Sonra Tekrar Deneyin.', life: 3000});
               }
             }).catch(e => {
           console.log(e)
         })
         router.push("/issueList")
-      } else {
+      }else {
         window.scrollTo(0, 0);
         IssueInfo.value.IsSaveWithConfirm = false
-        toast.add({
-          severity: 'error',
-          summary: 'Hata',
-          detail: 'İş Kaydı Oluşturulamadı.Lütfen Zorunlu Alanları Doldurun.',
-          life: 3000
-        });
+        toast.add({severity: 'error', summary: 'Hata', detail: 'İş Kaydı Oluşturulamadı.Lütfen Zorunlu Alanları Doldurun.', life: 3000});
       }
 
     }
@@ -312,12 +332,12 @@ export default {
         if (response.data.Success) {
 
           IssueInfo.value = response.data.Payload
-          IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId = response.data.Payload.IssueRelevantDepartmentInfos.map(f => {
-            return {
-              Definition: f.Department.Definition,
-              Id: f.DepartmentId
-            }
-          })
+           IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId = response.data.Payload.IssueRelevantDepartmentInfos.map(f => {
+             return {
+               Definition: f.Department.Definition,
+               Id: f.DepartmentId
+             }
+           })
           IssueInfo.value.IssueRoleInfos = response.data.Payload.IssueRoleInfos.map(f => {
             return {
               Id: f.Role.Id,
@@ -328,8 +348,7 @@ export default {
           ResetValue();
       })
     }
-    watch(() => versionInfo.value, (value) => {
-      console.log("selected version", value)
+    watch(()=>versionInfo.value,(value)=>{
       IssuesService.getSelectedIssue(value).then(response => {
         if (response.data.Success) {
           IssueInfo.value = response.data.Payload
@@ -388,6 +407,7 @@ export default {
       v$,
       save,
       rootPath,
+      fileUpload,
       urlUpload,
       onUpload,
       IssueFile,
@@ -402,8 +422,10 @@ export default {
       resultVersion,
       closeRejectDialog,
       saveAndConfirm,
-      back, tokenInfo, arrayErrors
-      , rules
+      back, tokenInfo, arrayErrors,
+      rules,
+      deleteFile,
+      findIndexByIdContact
     }
   }
 }

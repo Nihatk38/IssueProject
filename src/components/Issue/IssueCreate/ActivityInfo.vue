@@ -304,7 +304,6 @@ export default {
       if (!isFormValid) {
         return
       }
-      console.log("Activitiy1", activity.value)
       if (parentNode.value) {
         let detailsInfo = [...props.IssueActivityDetailInfos];
 
@@ -327,7 +326,6 @@ export default {
         parentNode.value = null;
         submitted.value = false;
         cancelButton()
-        console.log("Activitiy2", activity.value)
 
 
       } else {
@@ -348,7 +346,6 @@ export default {
       createActivityDialog.value = false
       cancelButton()
       submitted.value = false;
-      console.log("Activitiy3", activity.value)
 
 
     }
@@ -460,8 +457,6 @@ export default {
 
 
       let detailsInfo = [...props.IssueActivityDetailInfos];
-      console.log(JSON.stringify(detailsInfo));
-      console.log(JSON.stringify(selectedNode.value.data.Index));
       let foundItem = findByProperty(detailsInfo, val => val.Index === selectedNode.value.data.Index);
 
       const parentIndex = detailsInfo.indexOf(foundItem);
@@ -486,7 +481,6 @@ export default {
           }
         }
       }
-      console.log(detailsInfo);
 
       emit('update:IssueActivityDetailInfos', detailsInfo);
     }

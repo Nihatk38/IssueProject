@@ -52,6 +52,10 @@ const IssuesService = {
     {
         return client().get(`/api/Issue/TitleInfo/${TitleControl}`)
     },
+    getAllTitleInfo()
+    {
+        return client().get(`/api/Issue/GetAllTitleInfo`)
+    },
     getTitleInfoByDepartmentId(DepartmentId)
     {
         return client().get(`/api/Issue/TitleInfoByDepartmentId/${DepartmentId}`)
@@ -71,6 +75,9 @@ const IssuesService = {
     },
     uploadFile(formData){
         return client().post('api/Issue/Upload', formData);
+    },
+    deleteFile(FileInfo,Id){
+        return client().delete(`/api/Issue/DeleteFile/${FileInfo}/${Id}`)
     }
 }
 export default IssuesService;

@@ -1,5 +1,5 @@
 <template>
-  <Dialog :visible="true" :modal="true" :style="{width: '450px'}" header="Yeni Konu Oluştur"
+  <Dialog @update:visible="closeDialog" :visible="true" :modal="true" :style="{width: '450px'}" header="Yeni Konu Oluştur"
           class="p-fluid">
     <div class="field">
       <label for="DepartmentId">Departman*</label>
@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import {onMounted, ref, watch} from "vue";
+import { onMounted, ref, watch} from "vue";
 
 import IssuesService from "@/service/issueService";
 import UsersService from "@/service/users.service";
@@ -32,6 +32,9 @@ import UsersService from "@/service/users.service";
 
 export default {
   props: {
+    selectedValue:{
+      type:Object
+    },
     closeDialog: {
       type: Function,
       required: true
@@ -44,6 +47,9 @@ export default {
       type: Number,
       required: true
     },
+    close:{
+      type:Boolean,
+    }
   },
   name: "TitleCreate",
   setup(props) {
@@ -56,17 +62,16 @@ export default {
     const resultDepartment = ref(null)
 
 
+
     onMounted(async () => {
 
       await UsersService.getDepartmentList().then(response => {
         resultDepartment.value = response.Payload
-        console.log("resultDepartment",resultDepartment.value)
       })
     })
     watch(() => DepartmentId.value,(DepartmentId) =>{
         IssuesService.getTitleInfoByDepartmentId(DepartmentId).then(response =>{
           resultTitle.value = response.data.Payload
-          console.log("result",resultTitle.value)
         })
     })
 
@@ -90,7 +95,7 @@ export default {
       saveTitle,
       resultTitle,
       resultDepartment,
-      DepartmentId
+      DepartmentId,
     }
   }
 }
