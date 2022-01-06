@@ -1,12 +1,14 @@
 <template>
   <div>
     <DataTable class="p-treetable-sm" :value="sends" dataKey="Id"
+               v-model:contextMenuSelection="selected"
                v-model:selection="selected" selection-mode="single"
                v-model:filters="filters"
                filterDisplay="menu"
-               :globalFiltersFields="['FullName','Department','Role','Status']"
+               :globalFiltersFields="['Id','FullName','statusText','Summary','Title']"
                responsiveLayout="scroll" contextMenu show-gridlines
                :resizableColumns="true" columnResizeMode="fit"
+               @row-dblclick="viewIssue"
                @rowContextmenu="onRowContextMenu">
 
 
@@ -14,7 +16,7 @@
         Bir sonuç bulunamadı...
       </template>
 
-      <Column field="IssueId" header="Id" :style="{width:'100px'}">
+      <Column field="Id" header="Id" :style="{maxWidth:'30px'}">
         <template #body="{data}">
           {{ data.Id }}
         </template>
@@ -24,7 +26,7 @@
       </Column>
 
 
-      <Column field="FullName" header="Ad Soyad">
+      <Column field="FullName" header="Ad Soyad" :style="{maxWidth: '80px'}">
         <template #body="{data}">
           {{ data.FullName }}
         </template>
@@ -32,8 +34,15 @@
           <InputText type="text" v-model="filterModel.value" class="p-column-filter"/>
         </template>
       </Column>
-
-      <Column field="Title" header="Konu">
+      <Column field="Summary" header="Kısa Açıklama" :style="{maxWidth: '300px'}">
+        <template #body="{data}">
+          {{ data.Summary }}
+        </template>
+        <template #filter="{filterModel}">
+          <InputText type="text" v-model="filterModel.value" class="p-column-filter"/>
+        </template>
+      </Column>
+      <Column field="Title" header="Konu" :style="{maxWidth: '70px'}">
         <template #body="{data}">
           {{ data.Title }}
         </template>
@@ -41,7 +50,7 @@
           <InputText type="text" v-model="filterModel.value" class="p-column-filter"/>
         </template>
       </Column>
-      <Column field="Durum" header="Durum" :style="{width:'250px'}">
+      <Column field="statusText" header="Durum" :style="{maxWidth:'70px'}">
         <template #body="{data}">
           <span :class="'Issue status-' + data.status" class="ml-3">{{ data.statusText }}</span>
         </template>
@@ -112,13 +121,11 @@ export default {
     const filters = ref({
       'global': {value: null, matchMode: FilterMatchMode.CONTAINS},
       'FullName': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
-      'WorkArea': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
-      'status': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
-      'DepartmentName': {
-        operator: FilterOperator.AND,
-        constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]
-      },
-      'RoleName': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
+      'Summary': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
+      'Title': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
+      'Id': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
+      'statusText': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
+
     })
 
     const getIssues = () => {
@@ -130,16 +137,17 @@ export default {
             .map((data) => {
               return {
                 Id: data.Id,
-                WorkArea: data.WorkArea,
+                Summary:summaryControl(data.Summary),
                 DepartmentName: data.DepartmentName,
                 RoleName: data.RoleName,
                 FullName: data.FullName,
-                DepartmentId: data.DepartmentId,
                 status: data.Status,
                 statusText: Functions.statusControl(data.Status),
                 Title: data.Title
               }
+
             })
+
       })
     }
 
@@ -188,6 +196,15 @@ export default {
       })
 
     }
+    const summaryControl = (data) =>{
+        if(data.length>100){
+          let result = data.substring(0, 100);
+          return result + "..."
+        }else{
+          return data;
+        }
+
+    }
     const deleteIssue = () => {
       if (selected.value.status == 0 || selected.value.status == 9) {
        // issue.value = issue.value.filter((u) => u.Id !== issue.value.Id);
@@ -215,7 +232,7 @@ export default {
       router.push({
         name: 'issueCreate',
         path: '/issueCreate',
-        params: {data: selected.value.Id, status: selected.value.status,nameData:selected.value.FullName,comingName:selected.value.FullName
+        params: {data: selected.value.Id, constStatus: selected.value.status,nameData:selected.value.FullName,comingName:selected.value.FullName
           ,comingDepartment:selected.value.DepartmentName,comingRole:selected.value.RoleName}
       })
     }
@@ -244,7 +261,9 @@ export default {
       cm,
       openRejectDialog,
       rejectShow,
-      onRowContextMenu,deleteIssue
+      onRowContextMenu,deleteIssue,
+      viewIssue,
+      summaryControl
     }
   }
 }

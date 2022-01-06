@@ -36,7 +36,7 @@ export default (apiName = "") => {
 
             // Logout user if token refresh didn't work or user is disabled
             if (error.config.url === "/login" && !error.response.Success) {
-                console.log(" Refresh operation error ");
+
                 AuthService.clearTokens();
                 router.push({name: "Login"});
 

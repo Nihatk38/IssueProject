@@ -52,7 +52,11 @@ const IssuesService = {
     {
         return client().get(`/api/Issue/TitleInfo/${TitleControl}`)
     },
-    getAllTitleInfo()
+    GetAllSubtitleInfo()
+    {
+        return client().get(`/api/Issue/GetAllSubtitleInfo`)
+    },
+    GetAllTitleInfo()
     {
         return client().get(`/api/Issue/GetAllTitleInfo`)
     },
@@ -67,11 +71,20 @@ const IssuesService = {
     deleteIssue(Id) {
         return client().delete(`/api/Issue/Delete/${Id}`)
     },
-    addTitle(title) {
+    addSubtitle(title) {
         return client().post(`api/Issue/AddSubtitle`, title)
     },
+    addTitle(title) {
+        return client().post(`api/Issue/AddTitle`, title)
+    },
     updateTitle(title) {
-        return client().put(`api/title/UpdateTitle`, title)
+        return client().put(`api/Issue/UpdateTitle`, title)
+    },
+    updateSubtitle(title) {
+        return client().put(`api/Issue/UpdateSubtitle`, title)
+    },
+    deleteSubtitle(Id){
+        return client().delete(`/api/Issue/DeleteSubtitle/${Id}`)
     },
     uploadFile(formData){
         return client().post('api/Issue/Upload', formData);

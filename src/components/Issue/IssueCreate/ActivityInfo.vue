@@ -486,9 +486,13 @@ export default {
     }
 
     const onRowContextMenu = (event) => {
-      if (props.status > 0)
+      if (props.status == 0 || props.status == 9 || props.status == null){
+        cm.value.show(event)
+      } else{
         return
-      cm.value.show(event)
+      }
+
+
     }
     const onNodeSelect = (node) => {
       selectedNode.value = node;

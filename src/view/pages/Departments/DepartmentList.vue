@@ -3,6 +3,7 @@
     <h5>Departman Listesi</h5>
     <div class="card">
       <DataTable :value="departments" v-model:selection="selected" selectionMode="single" data-keys="Id"  @rowContextmenu="onRowContextMenu"
+                 v-model:contextMenuSelection="selected"
                  show-gridlines
                  responsiveLayout="scroll" scrollHeight="400px" v-model:filters="filters1" filterDisplay="menu" class="p-datatable-users"
                  :globalFiltersFields="['DepartmentName','Id']">

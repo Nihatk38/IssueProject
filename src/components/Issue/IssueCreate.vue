@@ -1,10 +1,23 @@
 <template>
-  <Dropdown class="p-dropdown mb-2" v-if="status==='9' " v-model="versionInfo" :options="resultVersion" optionValue="Id" optionLabel="VersionNo" placeholder="Önceki Revizyonları İncele"/>
+    <div v-if="constStatus == '9'">
 
+     <Dropdown class="p-dropdown mb-2"    v-model="versionInfo" :options="resultVersion" optionValue="Id" optionLabel="VersionNo" placeholder="Önceki Revizyonları İncele"/>
+
+    </div>
+
+
+<Dialog :content-style="' background-color: rgba(0, 0, 0, 0.1);'
+ " :visible="IsLoading" :modal="true"   :show-header="false" >
+  <p class="m-auto mt-2">Kaydediliyor..</p>
+  <div class="m-auto w-full">
+    <ProgressSpinner  ></ProgressSpinner>
+  </div>
+
+</Dialog>
   <scenario-information
       :scenarios="IssueInfo"
       :submitted="submitted"
-      :status="status"
+      :status="IssueInfo.Status"
       :data="data"
       :comingName="comingName"
       :comingDepartment="comingDepartment"
@@ -24,13 +37,13 @@
 
   <precondition
       :precondition-list="IssueInfo.IssuePreconditionInfos"
-      :status="status"
+      :status="IssueInfo.Status"
   ></precondition>
 
 
   <activity-list
       :IssueActivityInfos="IssueInfo.IssueActivitiyInfos"
-      :status="status"
+      :status="IssueInfo.Status"
       :submitted="submitted"
   >
     <template v-slot:activitiyinfos>
@@ -41,12 +54,12 @@
   </activity-list>
   <notes
       :note-list="IssueInfo.IssueNoteInfos"
-      :status="status"
+      :status="IssueInfo.Status"
   ></notes>
 
   <relevant-departments
       :departments="IssueInfo.IssueRelevantDepartmentInfos"
-      :status="status"
+      :status="IssueInfo.Status"
       :submitted="submitted"
   ></relevant-departments>
 
@@ -69,7 +82,7 @@
               <span v-else><a target="_blank" :href="`https://kavramsal.formsunger.com.tr/Resources/temp/${file.UniqueName}`">{{file.FileName}}</a></span>
             </div>
             <div class="col-1">
-              <Button class=" w-5 text-white p-button p-button-danger" :disabled="status>0 && status<9" @click="deleteFile(file.UniqueName)">X</Button>
+              <Button class=" w-5 text-white p-button p-button-danger" :disabled="IssueInfo.Status>0 && IssueInfo.Status<9" @click="deleteFile(file.UniqueName)">X</Button>
             </div>
           </div>
 
@@ -78,7 +91,7 @@
 
     </div>
 
-    <FileUpload :disabled="status>0 && status<9" :maxFileSize="1000000" :multiple="true"
+    <FileUpload :disabled="IssueInfo.Status>0 && IssueInfo.Status<9" :maxFileSize="1000000" :multiple="true"
                 :url="rootPath+'/api/Issue/upload'"
                 name="IssueAttachmentInfos" :custom-upload="true" @uploader="onUpload"
                 class="p-button-text"
@@ -97,13 +110,13 @@
       </router-link>
     </div>
 
-    <div v-if="status === '1' || status === '2' || status === '3' || status === '4'" class="col-10 grid ">
+    <div v-if="IssueInfo.Status === 1 || IssueInfo.Status === 2 || IssueInfo.Status === 3 || IssueInfo.Status === 4" class="col-10 grid ">
       <div class="col-offset-8 col-2 p-fluid">
-        <Button v-if="nameData != tokenInfo && status>0" class="w-full p-button-success" label="Onayla"
+        <Button v-if="nameData != tokenInfo && IssueInfo.Status>0" class="w-full p-button-success" label="Onayla"
                 @click="answerIssue"/>
       </div>
       <div class="col-2 p-fluid">
-        <Button v-if="nameData != tokenInfo && status>0" class="w-full p-button-danger "
+        <Button v-if="nameData != tokenInfo && IssueInfo.Status>0" class="w-full p-button-danger "
                 label="Reddet"
                 @click="rejectIssue"/>
       </div>
@@ -152,7 +165,7 @@ import IssuesService from "@/service/issueService";
 import issueService from "@/service/issueService";
 
 export default {
-  props: ['data', 'status', 'nameData', 'comingName', 'comingDepartment', 'comingRole'],
+  props: ['constStatus','data', 'nameData', 'comingName', 'comingDepartment', 'comingRole'],
   components: {ActivityList, Precondition, RelevantDepartments, ScenarioInformation, Notes, IssueRejectDialog},
   setup(props) {
 
@@ -168,6 +181,7 @@ export default {
     const IssueFile = ref(null)
     const urlUpload = ref('')
     const showButton = ref(false)
+    const IsLoading = ref(false)
     const versionInfo = ref('');
     const resultVersion = ref({});
     const arrayErrors = ref([]);
@@ -262,7 +276,7 @@ export default {
 
       IssuesService.deleteFile(fileInfo,props.data == null ? 0:props.data).then(response =>{
         if(response.data.Success){
-          console.log("find",findIndexByIdContact(fileInfo))
+
           IssueInfo.value.IssueAttachmentInfos.splice(findIndexByIdContact(fileInfo),1)
           toast.add({severity:'warn',summary:'Başarılı',detail:'Dosya Silindi',life:3000})
 
@@ -288,6 +302,8 @@ export default {
       arrayErrors.value.length = (v$.value.$errors.length)
 
       if (!v$.value.$error) {
+        IsLoading.value=true;
+
         if(IssueInfo.value.IssueRelevantDepartmentInfos.length != null && IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId){
             IssueInfo.value.IssueRelevantDepartmentInfos = IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId.map((m) => {
               return {
@@ -308,16 +324,23 @@ export default {
             .then(response => {
               if (response.data.Success) {
                 ResetValue();
-
-                toast.add({severity: 'success', summary: 'Başarılı', detail: 'İş Kaydı Oluşturuldu', life: 3000});
+                setTimeout(()=>{
+                  toast.add({severity: 'success', summary: 'Başarılı', detail: 'İş Kaydı Oluşturuldu', life: 3000});
+                },500)
 
               } else {
-                toast.add({severity: 'error', summary: 'Hata', detail: 'Beklenmedik Bir Hata Oluştu.Lütfen Daha Sonra Tekrar Deneyin.', life: 3000});
+                setTimeout(()=>{
+                  toast.add({severity: 'error', summary: 'Hata', detail: 'Beklenmedik Bir Hata Oluştu.Lütfen Daha Sonra Tekrar Deneyin.', life: 3000});
+                },500)
+
               }
             }).catch(e => {
           console.log(e)
+        }).finally(()=> {
+          IsLoading.value = false;
+          router.push('/issueList')
+
         })
-        router.push("/issueList")
       }else {
         window.scrollTo(0, 0);
         IssueInfo.value.IsSaveWithConfirm = false
@@ -332,6 +355,21 @@ export default {
         if (response.data.Success) {
 
           IssueInfo.value = response.data.Payload
+          if (IssueInfo.value.Status === 'Processing') {
+            IssueInfo.value.Status = 0;
+          } else if (IssueInfo.value.Status === 'ITWaiting') {
+            IssueInfo.value.Status = 1;
+          } else if (IssueInfo.value.Status === 'DepartmentWaiting') {
+            IssueInfo.value.Status = 2;
+          } else if (IssueInfo.value.Status === 'ManagerWaiting') {
+            IssueInfo.value.Status = 3;
+          } else if (IssueInfo.value.Status === 'ManagerCommitted') {
+            IssueInfo.value.Status = 4;
+          } else if (IssueInfo.value.Status === 'Locked') {
+            IssueInfo.value.Status = 5;
+          } else if (IssueInfo.value.Status === 'Rejected') {
+            IssueInfo.value.Status = 9
+          }
            IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId = response.data.Payload.IssueRelevantDepartmentInfos.map(f => {
              return {
                Definition: f.Department.Definition,
@@ -352,7 +390,7 @@ export default {
       IssuesService.getSelectedIssue(value).then(response => {
         if (response.data.Success) {
           IssueInfo.value = response.data.Payload
-
+          toast.add({severity: 'info',  detail: IssueInfo.value.VersionNo +' Numaralı Revizyon Bilgileri Getirildi.Lütfen Revizyon Bilgilerini İnceleyin.', life: 5000});
           IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId = response.data.Payload.IssueRelevantDepartmentInfos.map(f => {
             return {
               Definition: f.Department.Definition,
@@ -425,7 +463,8 @@ export default {
       back, tokenInfo, arrayErrors,
       rules,
       deleteFile,
-      findIndexByIdContact
+      findIndexByIdContact,
+      IsLoading
     }
   }
 }

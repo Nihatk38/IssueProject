@@ -7,7 +7,13 @@
     </div>
 
     <div class="field">
-      <label> Konu Başlığı</label>
+      <label for="Title">Konu*</label>
+      <Dropdown v-model="state.TitleId" :options="resultTitle" optionValue="Id" optionLabel="Subject" :disabled="selectedValue !=null"/>
+      <small v-if="(v$.TitleId.$invalid && submitted)" class="p-error">Konu Boş Bırakılamaz.</small>
+    </div>
+
+    <div class="field">
+      <label>Alt Konu Başlığı</label>
       <Textarea v-model="state.Subject"
                 class="inputfield w-full" cols="50" rows="3"></Textarea>
       <small v-if="(v$.Subject.$invalid && submitted)" class="p-error">Alt Konu Başlığı Boş Bırakılamaz.</small>
@@ -20,7 +26,7 @@
 </template>
 
 <script>
-import { onMounted, ref} from "vue";
+import { onMounted, ref, watch} from "vue";
 
 import IssuesService from "@/service/issueService";
 import UsersService from "@/service/users.service";
@@ -52,7 +58,7 @@ export default {
       type:Boolean
     }
   },
-  name: "TitleCreate",
+  name: "SubtitleCreate",
   setup(props) {
     const state = ref({
       Id:props.selectedValue == null ? '': props.selectedValue.Id,
@@ -60,12 +66,13 @@ export default {
       Subject:props.selectedValue == null ? '': props.selectedValue.Subject
     })
     const DepartmentId = ref(props.selectedValue == null ? '': props.selectedValue.DepartmentId)
-
+    const resultTitle = ref([])
     const resultDepartment = ref(null)
     const toast = useToast()
     const submitted = ref(false)
     const rules = ref({
       Subject:{required},
+      TitleId:{required}
     })
     const v$=useVuelidate(rules,state)
 
@@ -75,8 +82,16 @@ export default {
         resultDepartment.value = response.Payload
       })
     })
-
-
+    watch(() => DepartmentId.value,(DepartmentId) =>{
+        IssuesService.getTitleInfoByDepartmentId(DepartmentId).then(response =>{
+          resultTitle.value = response.data.Payload
+        })
+    })
+    if(props.clicked){
+      IssuesService.getTitleInfoByDepartmentId(DepartmentId.value).then(response =>{
+        resultTitle.value = response.data.Payload
+      })
+    }
 
     const saveTitle = () => {
       submitted.value=true;
@@ -84,16 +99,16 @@ export default {
       if(!v$.value.$error) {
         if (props.operation === 1) {
           let changeSubtitleInfo = {
-           DepartmentId:DepartmentId.value,
-            Subject:state.value.Subject
+            Id:state.value.TitleId,
+            SubTitle:state.value.Subject
           }
-          IssuesService.addTitle(changeSubtitleInfo).then(response => {
+          IssuesService.addSubtitle(changeSubtitleInfo).then(response => {
             if (response.data.Success)
               props.closeDialog(true)
-            toast.add({severity:'success',detail:'Başarılı',summary:'Konu Eklendi',life:4000})
+            toast.add({severity:'success',detail:'Başarılı',summary:'Alt Konu Eklendi',life:4000})
           })
         } else {
-          IssuesService.updateTitle(state.value).then(response => {
+          IssuesService.updateSubtitle(state.value).then(response => {
             if (response.data.Success) {
               props.closeDialog(true)
             }
@@ -106,6 +121,7 @@ export default {
     return {
       state,
       saveTitle,
+      resultTitle,
       resultDepartment,
       DepartmentId,
       v$,

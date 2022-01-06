@@ -2,19 +2,21 @@
   <div>
     <TabPanel header="">
       <DataTable class="p-treetable-sm" :value="comingList" dataKey="Id"
-                 v-model:selection="selected" selection-mode="single" r
+                 v-model:selection="selected" selection-mode="single"
+                 v-model:contextMenuSelection="selected"
                  v-model:filters="filters"
                  filterDisplay="menu"
-                 :globalFiltersFields="['FullName','Department','Role','Status']"
-                 esponsiveLayout="scroll" contextMenu showGridlines
+                 :globalFiltersFields="['FullName','Department','statusText']"
+                 responsiveLayout="scroll" contextMenu showGridlines
                  :resizableColumns="true" columnResizeMode="fit"
+                 @row-dblclick="viewIssue"
                  @rowContextmenu="onRowContextMenu">
 
         <template #empty>
           Bir sonuç bulunamadı...
         </template>
 
-        <Column field="IssueId" header="Id" :style="{width:'100px'}">
+        <Column field="Id" header="Id" :style="{width:'100px'}">
           <template #body="{data}">
             {{ data.Id }}
           </template>
@@ -50,7 +52,7 @@
           </template>
         </Column>
 
-        <Column field="status" header="Durum" :style="{width:'250px'}">
+        <Column field="statusText" header="Durum" :style="{width:'250px'}">
           <template #body="{data}">
             <span :class="'Issue status-' + data.status" class="ml-3">{{ data.statusText }}</span>
           </template>
@@ -88,12 +90,11 @@ export default {
       'Id': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
       'FullName': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
       'Title': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
-      'status': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
+      'statusText': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
       'DepartmentName': {
         operator: FilterOperator.AND,
         constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]
       },
-      'RoleName': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
     })
 
     const getIssues = () => {
@@ -149,7 +150,7 @@ export default {
       filters,
       menuModel,
       cm,
-
+      viewIssue,
       onRowContextMenu
     }
   }

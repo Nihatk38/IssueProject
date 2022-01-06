@@ -3,6 +3,7 @@
     <h5>Kullanıcı Listesi</h5>
     <div class="card">
     <DataTable :value="users" v-model:selection="selected"  selectionMode="single" dataKey="Id"  @rowContextmenu="onRowContextMenu"
+               v-model:contextMenuSelection="selected"
                responsiveLayout="scroll" :scrollable="true" scrollHeight="400px" v-model:filters="filters1"
                filterDisplay="menu" class="p-datatable-users"  showGridlines
                :globalFiltersFields="['FullName','EmailAddress','Department','Role']">

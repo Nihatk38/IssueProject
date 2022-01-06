@@ -26,15 +26,15 @@
           <div class="formgrid grid">
           <div class="field col-12 md:col-4">
             <label>Departman</label>
-            <InputText v-model="comingInfo[0].FullName"  :disabled="true" class="inputfield w-full"> </InputText>
+            <InputText v-model="comingInfo[0].DepartmentName"  :disabled="true" class="inputfield w-full"> </InputText>
           </div>
           <div class="field col-12 md:col-4">
             <label>Kullanıcı</label>
-            <InputText  v-model="comingInfo[0].DepartmentName"  :disabled="true" class="inputfield w-full">asdasd</InputText>
+            <InputText  v-model="comingInfo[0].FullName"  :disabled="true" class="inputfield w-full"></InputText>
           </div>
           <div class="field col-12 md:col-4">
             <label>Görevi</label>
-            <InputText  v-model="comingInfo[0].RoleName"  :disabled="true" class="inputfield w-full">asdasd</InputText>
+            <InputText  v-model="comingInfo[0].RoleName"  :disabled="true" class="inputfield w-full"></InputText>
           </div>
             </div>
         </div>
