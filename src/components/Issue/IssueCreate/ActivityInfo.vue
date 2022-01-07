@@ -486,7 +486,7 @@ export default {
     }
 
     const onRowContextMenu = (event) => {
-      if (props.status == 0 || props.status == 9 || props.status == null){
+      if (props.status === 0 || props.status === 9 || props.status == null || props.status == 'Rejected'){
         cm.value.show(event)
       } else{
         return

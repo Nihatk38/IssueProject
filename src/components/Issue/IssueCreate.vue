@@ -1,10 +1,8 @@
 <template>
-    <div v-if="constStatus == '9'">
-
-     <Dropdown class="p-dropdown mb-2"    v-model="versionInfo" :options="resultVersion" optionValue="Id" optionLabel="VersionNo" placeholder="Önceki Revizyonları İncele"/>
-
+    <div v-if="constStatus == '9'" class="p-3">
+     <Dropdown class="dr-solid border-1 border-round text-center  p-dropdown-trigger mb-2 "
+               v-model="versionInfo" :options="resultVersion"  optionValue="Id" optionLabel="VersionNo" placeholder="Önceki Revizyonları İncele"/>
     </div>
-
 
 <Dialog :content-style="' background-color: rgba(0, 0, 0, 0.1);'
  " :visible="IsLoading" :modal="true"   :show-header="false" >
@@ -223,9 +221,28 @@ export default {
     }
 
     ResetValue();
-    IssuesService.getVersionInfo(props.data).then( response => {
-      resultVersion.value = response.data.Payload
-    })
+    if(props.constStatus == '9'){
+      IssuesService.getVersionInfo(props.data).then( response => {
+       if(response.data.Payload == null){
+         resultVersion.value =[{
+           VersionNo:'Önceki Revizyon Bulunmamaktadır! '
+         }]
+
+
+       }else{
+         resultVersion.value =  response.data.Payload.map(f=>{
+           return{
+             Id :f.Id,
+             VersionNo:'Version ' + f.VersionNo
+           }
+
+         })
+       }
+
+
+      })
+    }
+
     const back = () =>{
       router.push("/issueList")
     }
@@ -387,25 +404,28 @@ export default {
       })
     }
     watch(()=>versionInfo.value,(value)=>{
-      IssuesService.getSelectedIssue(value).then(response => {
-        if (response.data.Success) {
-          IssueInfo.value = response.data.Payload
-          toast.add({severity: 'info',  detail: IssueInfo.value.VersionNo +' Numaralı Revizyon Bilgileri Getirildi.Lütfen Revizyon Bilgilerini İnceleyin.', life: 5000});
-          IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId = response.data.Payload.IssueRelevantDepartmentInfos.map(f => {
-            return {
-              Definition: f.Department.Definition,
-              Id: f.DepartmentId
-            }
-          })
-          IssueInfo.value.IssueRoleInfos = response.data.Payload.IssueRoleInfos.map(f => {
-            return {
-              Id: f.Role.Id,
-              Definition: f.Role.Definition
-            }
-          })
-        } else
-          ResetValue();
-      })
+      if(value != null){
+        IssuesService.getSelectedIssue(value).then(response => {
+          if (response.data.Success) {
+            IssueInfo.value = response.data.Payload
+            toast.add({severity: 'info',  detail: IssueInfo.value.VersionNo +' Numaralı Revizyon Bilgileri Getirildi.Lütfen Revizyon Bilgilerini İnceleyin.', life: 5000});
+            IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId = response.data.Payload.IssueRelevantDepartmentInfos.map(f => {
+              return {
+                Definition: f.Department.Definition,
+                Id: f.DepartmentId
+              }
+            })
+            IssueInfo.value.IssueRoleInfos = response.data.Payload.IssueRoleInfos.map(f => {
+              return {
+                Id: f.Role.Id,
+                Definition: f.Role.Definition
+              }
+            })
+          } else
+            ResetValue();
+        })
+      }
+
     })
     const rejectIssue = () => {
       openRejectDialog.value = true
@@ -469,3 +489,8 @@ export default {
   }
 }
 </script>
+<style scoped>
+.dr-solid{
+   border:1px solid darkorange;
+}
+</style>
