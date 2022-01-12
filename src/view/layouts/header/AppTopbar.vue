@@ -47,6 +47,7 @@ export default {
 
     onMounted(() => {
       UsersService.getUser(AuthService.getUserId()).then(response => {
+
         userInfo.value = response.data.Payload
 
       })

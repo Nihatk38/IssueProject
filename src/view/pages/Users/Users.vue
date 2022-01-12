@@ -27,7 +27,7 @@
         Bir sonuç bulunamadı...
       </template>
 
-      <Column field="FullName" header="Ad Soyad" >
+      <Column field="FullName" header="Ad Soyad" :style="{minWidth:'80px'}">
         <template #body="{data}">
           {{data.FullName}}
         </template>
@@ -36,7 +36,7 @@
         </template>
       </Column>
 
-      <Column field="EmailAddress" header="E-Posta" >
+      <Column field="EmailAddress" header="E-Posta" :style="{minWidth:'400px'}">
         <template #body="{data}">
           {{data.EmailAddress}}
         </template>
@@ -45,7 +45,7 @@
         </template>
       </Column>
 
-      <Column field="DepartmentName" header="Departman" >
+      <Column field="DepartmentName" header="Departman" :style="{minWidth:'100px'}">
         <template #body="{data}">
           {{data.DepartmentName}}
         </template>
@@ -54,7 +54,7 @@
         </template>
       </Column>
 
-      <Column field="RoleName" header="Rol" >
+      <Column field="RoleName" header="Rol" :style="{maxWidth:'140px'}">
         <template #body="{data}">
           {{data.RoleName}}
         </template>
@@ -63,7 +63,7 @@
         </template>
       </Column>
 
-      <Column field="IsManager" header="Amir" >
+      <Column field="IsManager" header="Amir" :style="{maxWidth:'140px'}">
         <template #body="{data}">
           {{data.IsManager}}
         </template>
@@ -72,7 +72,7 @@
         </template>
       </Column>
 
-      <Column field="IsKeyUser" header="Anahtar" >
+      <Column field="IsKeyUser" header="Anahtar" :style="{maxWidth:'140px'}">
         <template #body="{data}">
           {{data.IsKeyUser}}
         </template>
@@ -117,6 +117,7 @@ export default {
 
       const getUsers =() =>{
         UsersService.getUserList().then(response =>{
+          console.log("users",response.Payload)
           users.value=response.Payload.map((data)=>{
             return{
               Id:data.Id,
@@ -182,8 +183,8 @@ export default {
       menu.value.show(event.originalEvent);
     };
 
-    const deleteUser = (user) => {
-      users.value = users.value.filter((u) => u.Id !== user.value.Id);
+    const deleteUser = () => {
+
       confirm.require({
         message:"Kullanıcıyı silmek isteediğinizden emin misiniz?",
         header:"Onay Ver",

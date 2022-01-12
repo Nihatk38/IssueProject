@@ -15,7 +15,7 @@
           <div style="margin-bottom: 0.5rem">
             <label for="UserId">Sicil No</label>
           </div>
-          <InputText class="w-full" id="UserId" v-model="userInfo.UserId" type="text"/>
+          <InputNumber class="w-full" id="UserId" v-model="userInfo.UserId" autofocus  mode="decimal" :useGrouping="false" type="text" />
           <small v-if="v$.UserId.$error" class="p-error">Kullanıcı Adı Boş Bırakılamaz.</small>
         </div>
 
@@ -51,8 +51,8 @@ export default {
   setup() {
     const toast = useToast();
     const userInfo = reactive({
-      UserId: '',
-      Password: ''
+      UserId: null,
+      Password: null
     })
     const rules = {
       UserId: {required},
@@ -76,7 +76,10 @@ export default {
             toast.add({severity: 'success', summary: 'Başarılı', detail: 'Giriş Yapıldı', life: 3000});
             return router.push("/issueList")
           }
-          toast.add({severity: 'error', summary: 'Hata', detail: response.Information, life: 3000});
+          setTimeout(()=>{
+            toast.add({severity: 'error', summary: 'Hata', detail: response.Information, life: 3000});
+          },100)
+
 
         });
       }

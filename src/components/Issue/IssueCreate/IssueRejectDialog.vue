@@ -84,15 +84,23 @@ export default {
         accept: () => {
           IssuesService.rejectIssue(confirmModel.value).then(response => {
             if (response.Success) {
-              toast.add({severity: 'success', summary: 'Onaylandı', detail: 'Başarılı', life: 3000});
-              router.push("/issueList")
+              setTimeout(()=>{
+                toast.add({severity: 'success', summary: 'Reddedildi', detail: 'Başarılı', life: 3000});
+              },400)
             } else {
-              toast.add({severity: 'error', summary: response.Information, detail: 'Başarısız', life: 3000});
+              setTimeout(()=>{
+                toast.add({severity: 'error', summary: response.Information, detail: 'Başarısız', life: 3000});
+              })
             }
+          }) .finally(()=>{
+            router.push("/issueList")
           })
         },
         reject: () => {
-          toast.add({severity: 'warn', summary: 'Onaylanamadı', detail: 'Başarısız', life: 3000});
+          setTimeout(()=>{
+            toast.add({severity: 'warn', summary: 'Onaylanamadı', detail: 'Başarısız', life: 3000});
+          },400)
+
         }
       })
     }

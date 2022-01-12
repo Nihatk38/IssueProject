@@ -16,7 +16,7 @@
           Bir sonuç bulunamadı...
         </template>
 
-        <Column field="Id" header="Id" :style="{width:'100px'}">
+        <Column field="Id" header="Id" :sortable="true" :style="{maxWidth:'30px'}">
           <template #body="{data}">
             {{ data.Id }}
           </template>
@@ -25,7 +25,7 @@
           </template>
         </Column>
 
-        <Column field="DepartmentName" header="Departman">
+        <Column field="DepartmentName" header="Departman" :style="{maxWidth:'90px'}">
           <template #body="{data}">
             {{ data.DepartmentName }}
           </template>
@@ -34,7 +34,7 @@
           </template>
         </Column>
 
-        <Column field="FullName" header="Ad Soyad">
+        <Column field="FullName" header="Ad Soyad" :style="{maxWidth: '100px'}">
           <template #body="{data}">
             {{ data.FullName }}
           </template>
@@ -42,8 +42,15 @@
             <InputText type="text" v-model="filterModel.value" class="p-column-filter"/>
           </template>
         </Column>
-
-        <Column field="Title" header="Konu">
+        <Column field="Summary" header="Kısa Açıklama" :style="{maxWidth: '250px'}">
+          <template #body="{data}">
+            {{ data.Summary }}
+          </template>
+          <template #filter="{filterModel}">
+            <InputText type="text" v-model="filterModel.value" class="p-column-filter"/>
+          </template>
+        </Column>
+        <Column field="Title" header="Konu" :style="{maxWidth: '70px'}">
           <template #body="{data}">
             {{ data.Title }}
           </template>
@@ -52,7 +59,7 @@
           </template>
         </Column>
 
-        <Column field="statusText" header="Durum" :style="{width:'250px'}">
+        <Column field="statusText" header="Durum" :style="{maxWidth:'100px'}">
           <template #body="{data}">
             <span :class="'Issue status-' + data.status" class="ml-3">{{ data.statusText }}</span>
           </template>
@@ -81,7 +88,8 @@ import IssuesService from "@/service/issueService";
 import Functions from "@/auxiliary/directive/functions";
 
 export default {
-  setup() {
+  emits:['dataTableLength'],
+  setup(props,{emit}) {
     const cm = ref()
     const comingList = ref(null)
     const selected = ref(null)
@@ -101,20 +109,23 @@ export default {
       IssuesService.getIssueListPublic().then(response => {
         if (!response.Success)
           return
+        console.log("response",response.Payload)
         comingList.value = response.Payload
             .map((data) => {
               return {
                 Id: data.Id,
-                WorkArea: data.WorkArea,
+                Summary:summaryControl(data.Summary),
                 DepartmentName: data.DepartmentName,
                 RoleName: data.RoleName,
                 FullName: data.FullName,
                 DepartmentId: data.DepartmentId,
                 status: data.Status,
                 statusText: Functions.statusControl(data.Status),
-                Title: data.Title
+                Title: titleControl(data.Title)
               }
             })
+
+        emit('dataTableLength',comingList.value.length)
       })
     }
 
@@ -127,6 +138,24 @@ export default {
         }
       },
     ])
+    const summaryControl = (data) =>{
+      if(data.length>60){
+        let result = data.substring(0, 60);
+        return result + "..."
+      }else{
+        return data;
+      }
+
+    }
+    const titleControl = (data) =>{
+      if(data.length>15){
+        let result = data.substring(0, 15);
+        return result + "..."
+      }else{
+        return data;
+      }
+
+    }
     const viewIssue = () => {
       router.push({
         name: 'issueCreate',

@@ -3,20 +3,45 @@
     <div class="card">
       <div class="p-card-title flex justify-content-between">
         <h5>Konu Listesi</h5>
-        <Button label="Yeni Konu Oluştur" class="p-button-success p-button-outlined align-self-end"
+
+        <Button v-if="!IsManager" label="Yeni Konu Oluştur" class="p-button-success p-button-outlined align-self-end"
                 icon="pi pi-plus"
                 @click="newIssue"></Button>
       </div>
+      <TabView ref="tabview1" v-model:activeIndex="activeIndexValue"  >
 
-
-      <TabView ref="tabview1">
-
-        <TabPanel header="Benim Yazdıklarım">
-          <issue-send :key="renderComponent"  ></issue-send>
+        <TabPanel v-if="!IsManager"    >
+          <template #header>
+          <span class="mr-2"> Departman Yazılanlar</span>
+            <i class=" pi pi-bell    p-text-secondary" style="font-size: 1.5rem" v-badge="sendsTableLength"></i>
+          </template>
+          <issue-send
+              :key="renderComponent"
+              :activeIndex="activeValue"
+              @dataTableLength="IssueSendLength"
+          ></issue-send>
         </TabPanel>
-        <TabPanel header="Bana Gelenler">
-        <issue-incoming :key="renderComponent" ></issue-incoming>
+        <TabPanel   >
+          <template #header>
+            <span class="mr-2"> Bana Gelenler</span>
+            <i class=" pi pi-envelope    p-text-secondary" style="font-size: 1.5rem" v-badge.danger="incomingTableLength"></i>
+          </template>
+        <issue-incoming
+            :key="renderComponent"
+            @dataTableLength="IncomingDataTableLength"
+        ></issue-incoming>
       </TabPanel>
+        <TabPanel   v-if="IsManager">
+          <template #header>
+            <span class="mr-2"> İlgili Talepler</span>
+            <i class=" pi pi-bell    p-text-secondary" style="font-size: 1.5rem" v-badge="relevantTableLength"></i>
+          </template>
+          <relevant-issue
+              :activeIndex="activeValue"
+              @relevantIssueLength="relevantTable"
+          ></relevant-issue>
+        </TabPanel>
+
       </TabView>
     </div>
   </div>
@@ -29,10 +54,11 @@ import IssueSend from "../../../components/Issue/IssueSend";
 import IssueIncoming from "../../../components/Issue/IssueIncoming";
 import {useToast} from "primevue/usetoast";
 import router from "../../../router";
-import {ref,computed} from "vue";
-
+import {ref, computed, watch} from "vue";
+import AuthService from "@/service/auth.service";
+import RelevantIssue from "@/components/Issue/RelevantIssue";
 export default {
-  components: {IssueIncoming, IssueSend},
+  components: {RelevantIssue, IssueIncoming, IssueSend},
 
   setup() {
 
@@ -41,7 +67,17 @@ export default {
     const reRender=ref(false);
     const plus =ref(0)
     const renderComponent=computed(() => plus.value +1)
-
+    const IsManager = ref(false)
+    IsManager.value = AuthService.getFromTokenIsManager();
+    const activeIndexValue = ref(0)
+    const activeValue = ref(0)
+    const tabview1 = ref(null)
+    const sendsTableLength = ref(0);
+    const incomingTableLength = ref(0);
+    const relevantTableLength = ref(0);
+    watch(()=>activeIndexValue.value,(value)=>{
+      activeValue.value = value
+    })
 
    // root.$nextTick(() => {renderComponent.value = true;});
 
@@ -49,7 +85,15 @@ export default {
     const newIssue = () => {
       router.push("/issueCreate")
     }
-
+    const IssueSendLength = (data) => {
+      sendsTableLength.value = data
+    }
+    const IncomingDataTableLength = (data) => {
+      incomingTableLength.value = data
+    }
+    const relevantTable = (data) => {
+      relevantTableLength.value = data
+    }
     const logOut = () => {
       localStorage.removeItem('token');
       router.push("/login")
@@ -58,7 +102,8 @@ export default {
     }
 
     return {
-      logOut, newIssue,renderComponent,reRender,plus
+      logOut, newIssue,renderComponent,reRender,plus,IsManager,activeIndexValue,activeValue,tabview1,
+      IssueSendLength,sendsTableLength,IncomingDataTableLength,incomingTableLength,relevantTableLength,relevantTable
 
 
     }

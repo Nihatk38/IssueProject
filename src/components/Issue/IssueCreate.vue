@@ -80,7 +80,9 @@
               <span v-else><a target="_blank" :href="`https://kavramsal.formsunger.com.tr/Resources/temp/${file.UniqueName}`">{{file.FileName}}</a></span>
             </div>
             <div class="col-1">
-              <Button class=" w-5 text-white p-button p-button-danger" :disabled="IssueInfo.Status>0 && IssueInfo.Status<9" @click="deleteFile(file.UniqueName)">X</Button>
+              <Button class=" w-5 text-white p-button p-button-danger"
+                      :disabled="(IssueInfo.Status>0 && IssueInfo.Status<9) || IsManager || nameData!=tokenInfo"
+                      @click="deleteFile(file.UniqueName)">X</Button>
             </div>
           </div>
 
@@ -107,28 +109,33 @@
         </Button>
       </router-link>
     </div>
+    <div v-if="IssueInfo.Status === 1 || IssueInfo.Status === 2 || IssueInfo.Status === 3 || IssueInfo.Status === 4 " class="col-10 grid ">
 
-    <div v-if="IssueInfo.Status === 1 || IssueInfo.Status === 2 || IssueInfo.Status === 3 || IssueInfo.Status === 4" class="col-10 grid ">
-      <div class="col-offset-8 col-2 p-fluid">
-        <Button v-if="nameData != tokenInfo && IssueInfo.Status>0" class="w-full p-button-success" label="Onayla"
-                @click="answerIssue"/>
-      </div>
-      <div class="col-2 p-fluid">
-        <Button v-if="nameData != tokenInfo && IssueInfo.Status>0" class="w-full p-button-danger "
-                label="Reddet"
-                @click="rejectIssue"/>
-      </div>
+        <div class="col-offset-8 col-2 p-fluid">
+          <Button v-if="nameData != tokenInfo && IssueInfo.Status>0 && (activeIndex ==null || !IsManager)" class="w-full p-button-success" label="Onayla"
+                  @click="answerIssue"/>
+        </div>
+        <div class="col-2 p-fluid">
+          <Button v-if="nameData != tokenInfo && IssueInfo.Status>0 && (activeIndex ==null || !IsManager)" class="w-full p-button-danger "
+                  label="Reddet"
+                  @click="rejectIssue"/>
+        </div>
+
+
     </div>
 
     <div v-else class="col-10 grid">
-      <div class="col-offset-8 col-2 p-fluid">
-        <Button class="w-full p-button-success " label="Kaydet" @click="save"/>
-      </div>
 
-      <div class="col-2 p-fluid">
-        <Button class="w-full p-button-success p-button-outlined " label="Kaydet & Onayla"
-                @click="saveAndConfirm"/>
-      </div>
+        <div class="col-offset-8 col-2 p-fluid">
+          <Button v-if=" (activeIndex != 1 && !IsManager) && (nameData == tokenInfo || data == null) "  class="w-full p-button-success " label="Kaydet" @click="save"/>
+        </div>
+
+        <div class="col-2 p-fluid">
+          <Button v-if=" (activeIndex != 1 && !IsManager) && (nameData == tokenInfo || data == null) "  class="w-full p-button-success p-button-outlined " label="Kaydet & Onayla"
+                  @click="saveAndConfirm"/>
+        </div>
+
+
     </div>
   </div>
 
@@ -163,11 +170,10 @@ import IssuesService from "@/service/issueService";
 import issueService from "@/service/issueService";
 
 export default {
-  props: ['constStatus','data', 'nameData', 'comingName', 'comingDepartment', 'comingRole'],
+  props: ['constStatus','data', 'nameData', 'comingName', 'comingDepartment', 'comingRole','activeIndex'],
   components: {ActivityList, Precondition, RelevantDepartments, ScenarioInformation, Notes, IssueRejectDialog},
   setup(props) {
-
-
+    console.log("rooırıos",props.activeIndex)
     const confirmModel = ref({
       IssueId: '',
       Description: ''
@@ -183,7 +189,7 @@ export default {
     const versionInfo = ref('');
     const resultVersion = ref({});
     const arrayErrors = ref([]);
-
+    const IsManager = ref(false);
     const fileUpload = ref(null)
 
     const rules = computed(() => {
@@ -219,7 +225,7 @@ export default {
     const closeRejectDialog = () => {
       openRejectDialog.value = false
     }
-
+    IsManager.value = AuthService.getFromTokenIsManager();
     ResetValue();
     if(props.constStatus == '9'){
       IssuesService.getVersionInfo(props.data).then( response => {
@@ -227,19 +233,15 @@ export default {
          resultVersion.value =[{
            VersionNo:'Önceki Revizyon Bulunmamaktadır! '
          }]
-
-
-       }else{
+       }
+       else{
          resultVersion.value =  response.data.Payload.map(f=>{
            return{
              Id :f.Id,
              VersionNo:'Version ' + f.VersionNo
            }
-
          })
        }
-
-
       })
     }
 
@@ -445,16 +447,25 @@ export default {
         accept: () => {
           IssuesService.IssueConfirm(confirmModel.value).then(response => {
             if (response.Success) {
-              toast.add({severity: 'success', summary: 'Onaylandı', detail: 'Başarılı', life: 3000});
-              router.push("/issueList")
-
+              setTimeout(()=>{
+                toast.add({severity: 'success', summary: 'Onaylandı', detail: 'Başarılı', life: 3000});
+              },500)
             } else {
-              toast.add({severity: 'error', summary: response.Information, detail: 'Başarısız', life: 5000});
+              setTimeout(()=>{
+                toast.add({severity: 'error', summary: response.Information, detail: 'Başarısız', life: 5000});
+              },500)
+
             }
+          }).finally(()=>{
+            IsLoading.value = false;
+            router.push('/issueList')
           })
         },
         reject: () => {
-          toast.add({severity: 'warn', summary: 'Onaylanamadı', detail: 'Başarısız', life: 3000});
+          setTimeout(()=>{
+            toast.add({severity: 'warn', summary: 'Onaylanamadı', detail: 'Başarısız', life: 3000});
+          },400)
+
         }
       })
     }
@@ -484,7 +495,8 @@ export default {
       rules,
       deleteFile,
       findIndexByIdContact,
-      IsLoading
+      IsLoading,
+      IsManager
     }
   }
 }

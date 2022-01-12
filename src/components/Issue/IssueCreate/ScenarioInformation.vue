@@ -10,7 +10,7 @@
       <div class="formgrid grid">
           <div class="field col-12 md:col-4">
             <label>Departman</label>
-            <InputText v-model="userInfo.DepartmentName" :disabled="true" class="inputfield w-full"></InputText>
+            <InputText v-model="userInfo.DepartmentName " :disabled="true" class="inputfield w-full"></InputText>
           </div>
           <div class="field col-12 md:col-4">
             <label>Kullanıcı</label>
@@ -120,7 +120,7 @@ export default {
     const TitleControl = ref(true);
     comingInfo.value.push({
       FullName:props.comingName,
-      DepartmentName:props.comingDepartment,
+      DepartmentName:props.comingDepartment ,
       RoleName:props.comingRole,
     })
     onMounted(() => {

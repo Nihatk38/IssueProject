@@ -16,15 +16,11 @@
         Bir sonuç bulunamadı...
       </template>
 
-      <Column field="Id" header="Id" :sortable="true" :style="{maxWidth:'30px'}">
-
+      <Column field="Id" header="Id" :style="{maxWidth:'30px'}">
         <template #body="{data}">
           {{ data.Id }}
-
         </template>
-
         <template #filter="{filterModel}">
-
           <InputText type="text" v-model="filterModel.value" class="p-column-filter" placeholder="Search by name"/>
         </template>
       </Column>
@@ -54,7 +50,7 @@
           <InputText type="text" v-model="filterModel.value" class="p-column-filter"/>
         </template>
       </Column>
-      <Column field="statusText" header="Durum" :style="{maxWidth:'100px'}">
+      <Column field="statusText" header="Durum" :style="{maxWidth:'70px'}">
         <template #body="{data}">
           <span :class="'Issue status-' + data.status" class="ml-3">{{ data.statusText }}</span>
         </template>
@@ -73,7 +69,7 @@
           </div>
           <div class="col-6 ">
             {{rejectInfo.SubmitTime}}
-<!--            <InputText style="text-align: center" :disabled="true" v-model="rejectInfo.SubmitTime"></InputText>-->
+            <!--            <InputText style="text-align: center" :disabled="true" v-model="rejectInfo.SubmitTime"></InputText>-->
           </div>
         </div>
         <div class="col-6 grid align-items-center" >
@@ -82,13 +78,13 @@
           </div>
           <div class="col-6">
             {{rejectInfo.FullName}}
-<!--            <InputText style="text-align: center" :disabled="true" v-model="rejectInfo.FullName"></InputText>-->
+            <!--            <InputText style="text-align: center" :disabled="true" v-model="rejectInfo.FullName"></InputText>-->
           </div>
         </div>
       </div>
       <div class="p-field grid">
         <div class="col-12 border-1 border-200 border-round mt-2 p-2">
-            {{rejectInfo.Description}}
+          {{rejectInfo.Description}}
         </div>
       </div>
 
@@ -101,31 +97,27 @@
 <script>
 import {onMounted, ref, computed,watch} from "vue";
 import router from "@/router";
-
 import {FilterMatchMode, FilterOperator} from "primevue/api";
 
 import IssuesService from "@/service/issueService";
 
 import Functions from "@/auxiliary/directive/functions";
-import {useConfirm} from "primevue/useconfirm";
-import {useToast} from "primevue/usetoast";
-import AuthService from "@/service/auth.service";
 
 
 export default {
   props:['activeIndex'],
-  emits:['dataTableLength'],
+  emits:['relevantIssueLength'],
   setup(props,{emit}) {
+
     const rejectInfo = ref({})
     const rejectShow = ref(false)
     const sends = ref(null)
-    const sendActiveIndexValue = ref(0)
     const cm = ref()
-    const Toast = useToast()
+
     const selected = ref(null)
     const openRejectDialog = ref(false)
     const confirmContext = ref(false)
-    const confirm = useConfirm()
+
     const filters = ref({
       'global': {value: null, matchMode: FilterMatchMode.CONTAINS},
       'FullName': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
@@ -137,10 +129,10 @@ export default {
     })
 
     const getIssues = () => {
-      IssuesService.getIssueListPrivate().then(response => {
+
+      IssuesService.getRelevantIssues().then(response =>{
         if (!response.Success)
           return
-
         sends.value = response.Payload
             .map((data) => {
               return {
@@ -155,21 +147,19 @@ export default {
               }
 
             })
-        emit('dataTableLength',sends.value.length)
+
+        emit('relevantIssueLength',sends.value.length)
       })
     }
 
-    watch(()=>props.activeIndex,(value)=>{
-      sendActiveIndexValue.value = value
-    })
     if (selected.value !== null) {
       confirmContext.value = true
     }
 
     const menuModel = ref([
       {
-        label: computed(() => (rejectShow.value==true && selected.value.FullName == tokenInfo.value )?'Yeni Revizyon Oluştur':'İncele'),
-        icon: computed(() => (rejectShow.value==true && selected.value.FullName == tokenInfo.value )?'pi pi-plus':'pi pi-eye'),
+        label: computed(() => 'İncele'),
+        icon: computed(() =>'pi pi-eye'),
 
         command: () => {
           viewIssue()
@@ -188,17 +178,7 @@ export default {
         }
 
       },
-      {
-        label: "Sil",
-         icon: 'pi pi-trash',
-        visible: computed(() => (selected.value.status === 9 || selected.value.status ==0) && selected.value.FullName == tokenInfo.value),
-        command: () => {
-          deleteIssue()
-        }
-
-      }
     ])
-    const tokenInfo = ref(AuthService.getFromTokenFullName());
     const showRejectInfo = () => {
       openRejectDialog.value = true
       IssuesService.getRejectInfo(selected.value.Id).then(response => {
@@ -208,43 +188,20 @@ export default {
 
     }
     const summaryControl = (data) =>{
-        if(data.length>100){
-          let result = data.substring(0, 100);
-          return result + "..."
-        }else{
-          return data;
-        }
+      if(data.length>100){
+        let result = data.substring(0, 100);
+        return result + "..."
+      }else{
+        return data;
+      }
 
     }
-    const deleteIssue = () => {
-      if (selected.value.status == 0 || selected.value.status == 9) {
-       // issue.value = issue.value.filter((u) => u.Id !== issue.value.Id);
-        confirm.require({
-          message: "Hazırlanan kavramsalı silmek isteediğinizden emin misiniz?",
-          header: "Onay Ver",
-          icon: "pi pi- exclamation-triangle",
-          accept: () => {
-            IssuesService.deleteIssue(selected.value.Id).then(response => {
-              if (response.data.Success) {
-                /* users.value.splice(users.value.indexOf(selected.value),1)*/
-                Toast.add({severity: 'success', summary: 'Kavramsal Silindi', detail: 'Başarılı', life: 3000});
-                sends.value.splice(sends.value.indexOf(selected.value),1)
-              }
-            })
-
-          },
-          reject: () => {
-            Toast.add({severity: 'warn', summary: 'Kavramsal Silinemedi', detail: 'Başarısız', life: 3000});
-          }
-        })
-      }
-    };
     const viewIssue = () => {
       router.push({
         name: 'issueCreate',
         path: '/issueCreate',
         params: {data: selected.value.Id, constStatus: selected.value.status,nameData:selected.value.FullName,comingName:selected.value.FullName
-          ,comingDepartment:selected.value.DepartmentName,comingRole:selected.value.RoleName,activeIndex:sendActiveIndexValue.value}
+          ,comingDepartment:selected.value.DepartmentName,comingRole:selected.value.RoleName,activeIndex:props.activeIndex}
       })
     }
     watch(() => selected.value, (value) => {
@@ -272,11 +229,9 @@ export default {
       cm,
       openRejectDialog,
       rejectShow,
-      onRowContextMenu,deleteIssue,
+      onRowContextMenu,
       viewIssue,
       summaryControl,
-      sendActiveIndexValue,
-      tokenInfo
     }
   }
 }

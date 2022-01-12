@@ -12,6 +12,13 @@ const IssuesService = {
             console.log(e)
         })
     },
+    getRelevantIssues() {
+        return client().get(`/api/issue/GetListRelevantIssues`).then(r => {
+            return r.data
+        }).catch(e => {
+            console.log(e)
+        })
+    },
     getIssueListPublic() {
         return client().get(`/api/issue/ComeToMeIssues`).then(r => {
             return r.data
