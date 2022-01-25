@@ -2,7 +2,16 @@
   <Card class="mb-3 cardColor1 border-round">
 
     <template #title>
-      <h5 class="text-center">SENARYO BİLGİLERİ</h5>
+      <div class="grid">
+        <div class="field col-12 md:col-4" >
+          <span class="md:font-normal" v-if="data != null">#{{comingInfo[0].Id}}</span>
+        </div>
+        <div class=" field col-12 md:col-4">
+          <h5 class="text-center">SENARYO BİLGİLERİ</h5>
+        </div>
+        <div class="field col-12 md:col-4"></div>
+      </div>
+
     </template>
 
     <template #content>
@@ -23,6 +32,7 @@
         </div>
       </div>
         <div v-else>
+
           <div class="formgrid grid">
           <div class="field col-12 md:col-4">
             <label>Departman</label>
@@ -122,6 +132,7 @@ export default {
       FullName:props.comingName,
       DepartmentName:props.comingDepartment ,
       RoleName:props.comingRole,
+      Id:props.data
     })
     onMounted(() => {
       UsersService.getRole().then(response => {

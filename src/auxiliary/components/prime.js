@@ -37,7 +37,7 @@ import Tooltip from "primevue/tooltip";
 import Ripple from "primevue/ripple";
 import BadgeDirective from "primevue/badgedirective";
 import StyleClass from "primevue/styleclass";
-
+import MultiSelect from "primevue/multiselect";
 import ToastService from 'primevue/toastservice';
 import ConfirmationService from "primevue/confirmationservice";
 import PrimeVue from 'primevue/config';
@@ -93,6 +93,7 @@ export const prime = (app) => {
     app.use(ConfirmationService)
 
     app.component('Fieldset', Fieldset);
+    app.component('MultiSelect', MultiSelect);
     app.component('Button', Button);
     app.component('InputText', InputText);
     app.component('TabView', TabView);

@@ -1,30 +1,21 @@
 <template>
 
-  <Dialog :visible="true" :modal="true" :style="{width: '450px'}" header="Yeni Departman Oluştur"
+  <Dialog @update:visible="closeDialog" :visible="true" :modal="true" :style="{width: '450px'}" header="Yeni Departman Oluştur"
           class="p-fluid">
 
-    <form class="p-fluid" @submit.prevent="handleSubmit(!v$.$invalid)">
-
-
-
+    <form class="p-fluid" @submit.prevent="createDepartment(!v$.$invalid)">
       <div class="p-field">
         <label for="Definition">Departman Adı*</label>
-        <Dropdown v-model="state.Definition" :options="Departments" optionValue="Definition" optionLabel="Definition"/>
-        <small class="p-error" v-if="v$.Definition.$error">Rol Boş Bırakılamaz.</small>
+        <Dropdown v-model="v$.Definition.$model" :options="Departments" optionValue="Definition" optionLabel="Definition"
+                  :class="{'p-invalid':v$.Definition.$invalid && submitted}"/>
+        <small class="p-error" v-if="(v$.Definition.$invalid && submitted)">Rol Boş Bırakılamaz.</small>
       </div>
-
     </form>
-
     <template #footer>
       <Button label="İptal" icon="pi pi-times" class="p-button-text" @click="closeDialog"/>
       <Button label="Kaydet" icon="pi pi-check" class="p-button-text" @click="createDepartment"/>
-
     </template>
-
-
-
   </Dialog>
-
 </template>
 
 <script>
@@ -42,7 +33,7 @@ export default {
   },
 
   setup(props){
-
+    const submitted =ref(false)
     const state = reactive({
       Definition:'',
 
@@ -65,17 +56,19 @@ export default {
 
 
 
-    const createDepartment= ()=>{
+    const createDepartment= (isFormValid)=>{
+      submitted.value=true
+      if(!isFormValid){
+        return
+      }
 
-     UsersService.addDepartment(state).then(response =>{
-       if (response.data.Success)
-         props.closeDialog(true)
-     })
-
-
+      UsersService.addDepartment(state).then(response =>{
+        if (response.data.Success)
+          props.closeDialog(true)
+      })
     }
     return{
-      state,createDepartment,v$,Departments
+      state,createDepartment,v$,Departments,submitted
     }
   }
 

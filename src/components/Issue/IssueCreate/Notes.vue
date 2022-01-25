@@ -20,14 +20,14 @@
         Kayıt bulunamadı
       </template>
 
-      <Column field="LineNo" header="S.No">
+      <Column field="LineNo" header="S.No" :style="{  minWidth:'20px'}" >
 
         <template #body="{data}">
           {{ data.LineNo }}
         </template>
       </Column>
 
-      <Column field="Explanation" header="Açıklama">
+      <Column field="Explanation" header="Açıklama" :style="{  minWidth:'500px'}">
 
         <template #body="{data}">
           {{ data.Explanation }}
@@ -132,9 +132,9 @@ export default {
     }
 
     const saveNotes = () => {
-     /* if (noteList.value.length > 0) {
+      if (noteList.value.length > 0) {
         keyIndex.value = noteList.value.length
-      }*/
+      }
       keyIndex.value += 1
       noteList.value.push({
         Explanation: newExplanation.value,
@@ -145,9 +145,12 @@ export default {
     }
 
     const onRowContextMenu = (event) => {
-      if(props.status >0)
+      if(props.status >0 && props.status<9 ){
         return
-      cm.value.show(event.originalEvent)
+      }
+      else{
+        cm.value.show(event.originalEvent);
+      }
     }
 
     return {

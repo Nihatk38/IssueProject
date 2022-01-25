@@ -1,16 +1,14 @@
 <template>
-    <div v-if="constStatus == '9'" class="p-3">
-     <Dropdown class="dr-solid border-1 border-round text-center  p-dropdown-trigger mb-2 "
-               v-model="versionInfo" :options="resultVersion"  optionValue="Id" optionLabel="VersionNo" placeholder="Önceki Revizyonları İncele"/>
+    <div v-if="IssueInfo.Status >0 && IssueInfo.VersionNo>0" class="p-3">
+        <Dropdown class="dr-solid border-1 border-round text-center  p-dropdown-trigger mb-2 "
+                  v-model="versionInfo" :options="resultVersion"  optionValue="Id" optionLabel="VersionNo" placeholder="Önceki Revizyonları İncele"/>
     </div>
-
 <Dialog :content-style="' background-color: rgba(0, 0, 0, 0.1);'
  " :visible="IsLoading" :modal="true"   :show-header="false" >
-  <p class="m-auto mt-2">Kaydediliyor..</p>
+  <p class="m-auto mt-2">Yükleniyor..</p>
   <div class="m-auto w-full">
     <ProgressSpinner  ></ProgressSpinner>
   </div>
-
 </Dialog>
   <scenario-information
       :scenarios="IssueInfo"
@@ -57,13 +55,14 @@
 
   <relevant-departments
       :departments="IssueInfo.IssueRelevantDepartmentInfos"
-      :status="IssueInfo.Status"
+      :status="status"
       :submitted="submitted"
+      :UserId="UserId"
   ></relevant-departments>
 
-  <div class="card cardColor1">
+  <div class="card border-round cardColor1">
     <div v-if="IssueInfo.IssueAttachmentInfos.length>0"
-         class=" card mb-2  ">
+         class=" card mb-2 border-round ">
 
       <div class=" border-1 border-200 p-3">
         <div class="border-bottom-1 border-500 mb-3 p-1">
@@ -76,11 +75,11 @@
 <!--          <span  v-if="data>0"><a target="_blank" :href="`file:///c://Project/Web/Resources/Files/${file.UniqueName}`">{{file.FileName}}</a></span>
           <span  v-else><a  target="_blank" :href="`file:///c://Project/Web/Resources/temp/${file.UniqueName}`">{{file.FileName}}</a></span>-->
 
-              <span v-if="data>0"><a target="_blank" :href="`https://kavramsal.formsunger.com.tr/Resources/Files/${file.UniqueName}`">{{file.FileName}}</a></span>
+              <span v-if="data>0"><a  target="_blank" :href="`https://kavramsal.formsunger.com.tr/Resources/Files/${file.UniqueName}`">{{file.FileName}}</a></span>
               <span v-else><a target="_blank" :href="`https://kavramsal.formsunger.com.tr/Resources/temp/${file.UniqueName}`">{{file.FileName}}</a></span>
             </div>
             <div class="col-1">
-              <Button class=" w-5 text-white p-button p-button-danger"
+              <Button class=" w-5 text-white p-button p-button-danger text-center"
                       :disabled="(IssueInfo.Status>0 && IssueInfo.Status<9) || IsManager || nameData!=tokenInfo"
                       @click="deleteFile(file.UniqueName)">X</Button>
             </div>
@@ -112,11 +111,11 @@
     <div v-if="IssueInfo.Status === 1 || IssueInfo.Status === 2 || IssueInfo.Status === 3 || IssueInfo.Status === 4 " class="col-10 grid ">
 
         <div class="col-offset-8 col-2 p-fluid">
-          <Button v-if="nameData != tokenInfo && IssueInfo.Status>0 && (activeIndex ==null || !IsManager)" class="w-full p-button-success" label="Onayla"
+          <Button v-if=" CheckCommit === 'true'" class="w-full p-button-success" label="Onayla"
                   @click="answerIssue"/>
         </div>
         <div class="col-2 p-fluid">
-          <Button v-if="nameData != tokenInfo && IssueInfo.Status>0 && (activeIndex ==null || !IsManager)" class="w-full p-button-danger "
+          <Button v-if=" CheckCommit === 'true'" class="w-full p-button-danger "
                   label="Reddet"
                   @click="rejectIssue"/>
         </div>
@@ -126,11 +125,11 @@
 
     <div v-else class="col-10 grid">
 
-        <div class="col-offset-8 col-2 p-fluid">
+        <div class="col-offset-8 col-2 p-fluid" v-if="maxVersionNo == IssueInfo.VersionNo  || status == 0 || status ==null">
           <Button v-if=" (activeIndex != 1 && !IsManager) && (nameData == tokenInfo || data == null) "  class="w-full p-button-success " label="Kaydet" @click="save"/>
         </div>
 
-        <div class="col-2 p-fluid">
+        <div class="col-2 p-fluid" v-if="maxVersionNo == IssueInfo.VersionNo  || status == 0 || status ==null">
           <Button v-if=" (activeIndex != 1 && !IsManager) && (nameData == tokenInfo || data == null) "  class="w-full p-button-success p-button-outlined " label="Kaydet & Onayla"
                   @click="saveAndConfirm"/>
         </div>
@@ -138,7 +137,6 @@
 
     </div>
   </div>
-
   <issue-reject-dialog
       v-if="openRejectDialog"
       :close-dialog="closeRejectDialog"
@@ -168,17 +166,16 @@ import IssueRejectDialog from "@/components/Issue/IssueCreate/IssueRejectDialog"
 import AuthService from "@/service/auth.service";
 import IssuesService from "@/service/issueService";
 import issueService from "@/service/issueService";
+import functions from "@/auxiliary/directive/functions";
 
 export default {
-  props: ['constStatus','data', 'nameData', 'comingName', 'comingDepartment', 'comingRole','activeIndex'],
+  props: ['constStatus','data', 'nameData', 'comingName', 'comingDepartment', 'comingRole','activeIndex','CheckCommit','UserId','status'],
   components: {ActivityList, Precondition, RelevantDepartments, ScenarioInformation, Notes, IssueRejectDialog},
   setup(props) {
-    console.log("rooırıos",props.activeIndex)
     const confirmModel = ref({
       IssueId: '',
       Description: ''
     })
-
     const openRejectDialog = ref(false)
     const submitted = ref(false)
     const IssueInfo = ref({})
@@ -189,9 +186,11 @@ export default {
     const versionInfo = ref('');
     const resultVersion = ref({});
     const arrayErrors = ref([]);
+    const token = AuthService.isAuth();
     const IsManager = ref(false);
+    const IsVisible = ref(false);
     const fileUpload = ref(null)
-
+    const maxVersionNo=ref(null)
     const rules = computed(() => {
       return {
         IssueRoleInfos: {required},
@@ -225,25 +224,31 @@ export default {
     const closeRejectDialog = () => {
       openRejectDialog.value = false
     }
-    IsManager.value = AuthService.getFromTokenIsManager();
+    IsManager.value = token.IsManager;
+    IsVisible.value = token.IsVisible;
     ResetValue();
-    if(props.constStatus == '9'){
-      IssuesService.getVersionInfo(props.data).then( response => {
-       if(response.data.Payload == null){
-         resultVersion.value =[{
-           VersionNo:'Önceki Revizyon Bulunmamaktadır! '
-         }]
-       }
-       else{
-         resultVersion.value =  response.data.Payload.map(f=>{
-           return{
-             Id :f.Id,
-             VersionNo:'Version ' + f.VersionNo
-           }
-         })
-       }
-      })
-    }
+      if(props.data !=null){
+        IssuesService.getVersionInfo(props.data).then( response => {
+          if(response.data.Payload == null){
+            resultVersion.value =[{
+              VersionNo:'Önceki Revizyon Bulunmamaktadır! '
+            }]
+            maxVersionNo.value =0
+          }
+          else{
+            resultVersion.value =  response.data.Payload.map(f=>{
+              return{
+                Id :f.Id,
+                VersionNo:'Version ' + f.VersionNo
+              }
+            })
+            console.log("version",response.data.Payload)
+            maxVersionNo.value = Math.max.apply(Math, response.data.Payload.map(function(o) { return o.VersionNo; }))
+          }
+        })
+      }
+
+
 
     const back = () =>{
       router.push("/issueList")
@@ -252,9 +257,7 @@ export default {
     const tokenInfo = ref(AuthService.getFromTokenFullName());
 
     const onUpload = (e) => {
-
       let formData = new FormData();
-
       e.files.forEach((file) =>
         formData.append('files',file)
       );
@@ -270,21 +273,6 @@ export default {
             fileUpload.value.clear();
           }
       );
-
-      /*
-       if(e.xhr.responseText == "MUKERRERKAYIT")
-         toast.add({severity: 'info', summary: 'Başarısız', detail: 'Bu Dosya isminden Daha Önceden Kayıt Tespit Edildi.Lütfen Başka Bir Dosya Ekleyin Veya Dosya İsmini Değiştirin!', life: 5000});
-       else if (e.xhr.responseText == "ONAY"){
-         toast.add({severity: 'success', summary: 'Başarılı', detail: 'Dosya Eklendi', life: 3000});
-         IssueInfo.value.IssueAttachmentInfos = e.files.map((f) => {
-           return {
-             FileName: f.name,
-           }
-         })
-       }else if(e.xhr.responseText == "BASARISIZ"){
-         toast.add({severity: 'error', summary: 'Başarısız', detail: 'Dosya Yüklenemedi Lütfen Yüklemek İstediğiniz Dosyayı Kontrol Edin! ', life: 5000});
-       }
-       */
     }
 
     const saveAndConfirm = () => {
@@ -370,25 +358,12 @@ export default {
 
     if (props.data > 0) {
       showButton.value = true
+      IsLoading.value = true;
       IssuesService.getSelectedIssue(props.data).then(response => {
         if (response.data.Success) {
 
           IssueInfo.value = response.data.Payload
-          if (IssueInfo.value.Status === 'Processing') {
-            IssueInfo.value.Status = 0;
-          } else if (IssueInfo.value.Status === 'ITWaiting') {
-            IssueInfo.value.Status = 1;
-          } else if (IssueInfo.value.Status === 'DepartmentWaiting') {
-            IssueInfo.value.Status = 2;
-          } else if (IssueInfo.value.Status === 'ManagerWaiting') {
-            IssueInfo.value.Status = 3;
-          } else if (IssueInfo.value.Status === 'ManagerCommitted') {
-            IssueInfo.value.Status = 4;
-          } else if (IssueInfo.value.Status === 'Locked') {
-            IssueInfo.value.Status = 5;
-          } else if (IssueInfo.value.Status === 'Rejected') {
-            IssueInfo.value.Status = 9
-          }
+          IssueInfo.value.Status = functions.statusCheck(IssueInfo.value.Status)
            IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId = response.data.Payload.IssueRelevantDepartmentInfos.map(f => {
              return {
                Definition: f.Department.Definition,
@@ -403,13 +378,18 @@ export default {
           })
         } else
           ResetValue();
+      }).finally(()=>{
+        IsLoading.value = false;
       })
     }
     watch(()=>versionInfo.value,(value)=>{
       if(value != null){
+        IsLoading.value=true;
         IssuesService.getSelectedIssue(value).then(response => {
           if (response.data.Success) {
             IssueInfo.value = response.data.Payload
+            IssueInfo.value.Status = functions.statusCheck(IssueInfo.value.Status)
+            console.log("statu",IssueInfo.value.Status)
             toast.add({severity: 'info',  detail: IssueInfo.value.VersionNo +' Numaralı Revizyon Bilgileri Getirildi.Lütfen Revizyon Bilgilerini İnceleyin.', life: 5000});
             IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId = response.data.Payload.IssueRelevantDepartmentInfos.map(f => {
               return {
@@ -425,6 +405,8 @@ export default {
             })
           } else
             ResetValue();
+        }).finally(()=>{
+          IsLoading.value = false;
         })
       }
 
@@ -496,7 +478,9 @@ export default {
       deleteFile,
       findIndexByIdContact,
       IsLoading,
-      IsManager
+      IsManager,
+      IsVisible,
+      maxVersionNo
     }
   }
 }
@@ -504,5 +488,6 @@ export default {
 <style scoped>
 .dr-solid{
    border:1px solid darkorange;
+    box-shadow: 2px 3px 5px rgba(0,0,0,.02), 0px 0px 2px rgba(0,0,0,.05), 0px 1px 4px rgba(0,0,0,.08);
 }
 </style>

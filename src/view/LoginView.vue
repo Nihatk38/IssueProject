@@ -15,7 +15,9 @@
           <div style="margin-bottom: 0.5rem">
             <label for="UserId">Sicil No</label>
           </div>
-          <InputNumber class="w-full" id="UserId" v-model="userInfo.UserId" autofocus  mode="decimal" :useGrouping="false" type="text" />
+          <div>
+            <InputNumber class="w-full" id="UserId" v-model="userInfo.UserId" autofocus  mode="decimal" :useGrouping="false" type="text"/>
+          </div>
           <small v-if="v$.UserId.$error" class="p-error">Kullanıcı Adı Boş Bırakılamaz.</small>
         </div>
 
@@ -24,8 +26,10 @@
             <label for="Password">Şifre</label>&nbsp;
           </div>
 
-          <InputText class="w-full" id="Password" v-model="userInfo.Password" :type="passwordFieldType"
-          @keypress.enter="login"/>
+          <div>
+            <InputText class="w-full" id="Password" v-model="userInfo.Password" :type="passwordFieldType"
+             @keypress.enter="login"/>
+            </div>
           <small v-if="v$.Password.$error" class="p-error">Şifre Boş Bırakılamaz.</small>
         </div>
 

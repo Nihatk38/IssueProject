@@ -9,32 +9,33 @@
       Kayıt bulunamadı
     </template>
 
-    <Column :expander="true" field="LineNo" header="Sıra No">
+    <Column headerStyle="width:16px"  :expander="true" field="LineNo" header="Sıra No">
       <template #body="data">
         {{ data.node.data.LineNo }}
       </template>
     </Column>
 
-    <Column field="Definition" header="Tanım">
+    <Column headerStyle="width:125px" field="Definition" header="Tanım">
       <template #body="data">
 
         {{ data.node.data.Definition }}
       </template>
     </Column>
 
-    <Column field="RoleId" header="Rol">
+    <Column headerStyle="width:16px"  field="RoleId" header="Rol">
       <template #body="data">
         {{ resultRoles.find(role => role.Id === data.node.data.RoleId)?.Definition ?? "" }}
       </template>
     </Column>
 
-    <Column field="Medium" header="Ortam">
+    <Column  headerStyle="width:16px" field="Medium" header="Ortam">
       <template #body="data">
         {{ data.node.data.Medium }}
+
       </template>
     </Column>
 
-    <Column field="Explanation" header="Açıklama">
+    <Column field="Explanation" header="Açıklama" headerStyle="width:125px">
       <template #body="data">
         {{ data.node.data.Explanation }}
       </template>
@@ -46,15 +47,10 @@
   <ContextMenu :model="menuModel" ref="cm"/>
 
 
-  <Dialog v-model:visible="createActivityDialog" :modal="true" :style="{width: '800px'}" :visible="true"
+  <Dialog v-model:visible="createActivityDialog" :modal="true" :style="{width: '800px'}" :visible="true" header="Yeni Akış Oluştur"
           class="p-fluid">
 
-
-    <template #header="">
-      <p>Yeni Akış oluştur--></p>
-    </template>
-
-    <div class="p-field mb-2 max-w-screen">
+    <div class="p-field mb-4 max-w-screen">
       <label for="Definition">Tanım</label>
       <Textarea id="Definition" v-model="v$.Definition.$model" :auto-resize="true" maxLength="2000"
                 :class="{'p-invalid':v$.Definition.$invalid && submitted}"/>
@@ -62,7 +58,7 @@
     </div>
 
     <div class="p-field mb-4">
-      <!--      <label for="RoleId">Rol</label>-->
+            <label for="RoleId">Rol</label>
       <Dropdown v-model="v$.RoleId.$model" :options="resultRoles" optionLabel="Definition" optionValue="Id"
                 placeholder="Rol Seçiniz."
                 :class="{'p-invalid':v$.RoleId.$invalid && submitted}"/>
@@ -70,7 +66,7 @@
     </div>
 
     <div class="p-field mb-4">
-      <!--      <InputText id="Precondition" v-model="activity.Medium" :auto-resize="true"/>-->
+      <label for="Medium">Ortam</label>
       <Dropdown v-model="activity.Medium" :options="mediums" optionLabel="label" optionValue="value"
                 placeholder="Ortam Seçiniz."/>
 
@@ -78,7 +74,7 @@
 
     <div class="p-field">
       <label for="Explanation">Açıklama</label>
-      <Textarea id="Definition" v-model="activity.Explanation" :auto-resize="true" maxLength="2000"/>
+      <Textarea id="Explanation" v-model="activity.Explanation" :auto-resize="true" maxLength="2000"/>
 
     </div>
     <template #footer>
@@ -491,6 +487,7 @@ export default {
       } else{
         return
       }
+
 
 
     }

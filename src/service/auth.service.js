@@ -44,15 +44,7 @@ const AuthService = {
             return {};
         }
     },
-    getFromTokenIsManager(){
-        let token = JSON.parse(localStorage.getItem('token'));
-        if (token) {
 
-            return token.IsManager;
-        } else {
-            return {};
-        }
-    },
     getToken() {
         let token = JSON.parse(localStorage.getItem('token'));
 

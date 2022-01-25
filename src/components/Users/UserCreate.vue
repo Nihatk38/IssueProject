@@ -1,107 +1,137 @@
 <template>
 
-    <Dialog @update:visible="closeDialog" :visible="true" :modal="true" :style="{width: '450px'}" header="Yeni Kullanıcı Oluştur"
-    class="p-fluid">
+  <Dialog @update:visible="closeDialog" :visible="true" :modal="true" :style="{width: '450px'}" header="Yeni Kullanıcı Oluştur"
+          class="p-fluid">
 
-        <form class="p-fluid" @submit.prevent="saveUser(!v$.$invalid)">
+    <form class="p-fluid" @submit.prevent="saveUser(!v$.$invalid)">
 
-          <div class="field">
-            <label for="Id">Sicil Numarası*</label>
-            <InputNumber :disabled="operation===2" id="Id"  v-model="v$.Id.$model"  autofocus  mode="decimal" :useGrouping="false"
-                         :class="{'p-invalid':v$.Id.$invalid && submitted}" type="text" />
-            <small v-if="(v$.Id.$invalid && submitted)" class="p-error">Sicil Numarası Boş Bırakılamaz.</small>
-          </div>
-
-
-
-          <div class="field">
-            <label for="FullName">Ad Soyad*</label>
-            <InputText id="FullName" v-model="v$.FullName.$model"  autofocus
-                       :class="{'p-invalid':v$.FullName.$invalid && submitted}" type="text" maxlength="30"/>
-            <small class="p-error" v-if="(v$.FullName.$invalid && submitted)" >Ad Soyad Boş Bırakılamaz.</small>
-          </div>
+      <div class="field">
+        <label for="Id">Sicil Numarası*</label>
+        <InputNumber :disabled="operation===2" id="Id"  v-model="v$.Id.$model"  autofocus  mode="decimal" :useGrouping="false"
+                     :class="{'p-invalid':v$.Id.$invalid && submitted}" type="text" />
+        <small v-if="(v$.Id.$invalid && submitted)" class="p-error">Sicil Numarası Boş Bırakılamaz.</small>
+      </div>
 
 
-          <div class="field">
-            <label for="EmailAddress">E-Posta*</label>
-            <InputText id="EmailAddress" v-model="v$.EmailAddress.$model" autofocus
-                       :class="{'p-invalid':v$.EmailAddress.$invalid && submitted}"/>
-            <small class="p-error" v-if="(v$.EmailAddress.$invalid && submitted)">E-Posta Boş Bırakılamaz.</small>
-          </div>
+
+      <div class="field">
+        <label for="FullName">Ad Soyad*</label>
+        <InputText id="FullName" v-model="v$.FullName.$model"  autofocus
+                   :class="{'p-invalid':v$.FullName.$invalid && submitted}" type="text" maxlength="30"/>
+        <small class="p-error" v-if="(v$.FullName.$invalid && submitted)" >Ad Soyad Boş Bırakılamaz.</small>
+      </div>
 
 
-                  <div class="field">
-                     <label for="DepartmentId">Departman*</label>
-                     <Dropdown v-model="v$.DepartmentId.$model" :options="resultDepartment" optionValue="Id" optionLabel="Definition"
-                               :class="{'p-invalid':v$.DepartmentId.$invalid && submitted}"/>
-                     <small class="p-error" v-if="(v$.DepartmentId.$invalid && submitted)">Departman Boş Bırakılamaz.</small>
-                   </div>
+      <div class="field">
+        <label for="EmailAddress">E-Posta*</label>
+        <InputText id="EmailAddress" v-model="v$.EmailAddress.$model" autofocus
+                   :class="{'p-invalid':v$.EmailAddress.$invalid && submitted}"/>
+        <small class="p-error" v-if="(v$.EmailAddress.$invalid && submitted)">E-Posta Boş Bırakılamaz.</small>
+      </div>
 
-          <div class="field">
-                 <label for="IsManager">Yönetici Amir*</label>
 
-               <div class="card border-noround" :class="{'p-invalid':v$.IsManager.$invalid && submitted}">
-                 <div class="grid" >
-                   <div class="col-3">
-                 <RadioButton v-model="v$.IsManager.$model" name="state.IsManager" :value=1 />
-                 <label for="IsManager">Evet</label>
-                   </div>
-                   <div class="col-3">
-                 <RadioButton  :value=0 name="state.IsManager" v-model="v$.IsManager.$model" />
-                 <label for="IsManager">Hayır</label>
-                   </div>
-                 </div>
-               </div>
-            <small class="p-error" v-if="(v$.IsManager.$invalid && submitted)">Kullanıcının Mevkisini Belirlemek Zorundasınız.</small>
-          </div>
 
-          <div class="field">
-            <label for="IsKeyUser">Anahtar Kullanıcı*</label>
+      <div class="field">
+        <label for="IsManager">Yönetici Amir*</label>
 
-            <div class="card border-noround" :class="{'p-invalid':v$.IsKeyUser.$invalid && submitted}">
-              <div class="grid" >
-                <div class="col-3">
-                  <RadioButton v-model="v$.IsKeyUser.$model" name="state.IsKeyUser" :value=1 />
-                  <label for="IsKeyUser">Evet</label>
-                </div>
-                <div class="col-3">
-                  <RadioButton  :value=0 name="state.IsKeyUser" v-model="v$.IsKeyUser.$model" />
-                  <label for="IsKeyUser">Hayır</label>
-                </div>
-              </div>
+        <div class="card border-noround" :class="{'p-invalid':v$.IsManager.$invalid && submitted}">
+          <div class="grid" >
+            <div class="col-3">
+              <RadioButton v-model="v$.IsManager.$model" name="state.IsManager" :value=1 />
+              <label for="IsManager">Evet</label>
             </div>
-            <small class="p-error" v-if="(v$.IsKeyUser.$invalid && submitted)">Kullanıcının Mevkisini Belirlemek Zorundasınız.</small>
+            <div class="col-3">
+              <RadioButton  :value=0 name="state.IsManager" v-model="v$.IsManager.$model" />
+              <label for="IsManager">Hayır</label>
+            </div>
           </div>
+        </div>
+        <small class="p-error" v-if="(v$.IsManager.$invalid && submitted)">Kullanıcının Mevkisini Belirlemek Zorundasınız.</small>
+      </div>
+
+      <div v-if="state.IsManager">
+        <div class="field">
+          <label for="DepartmentId">Departman*</label>
+          <MultiSelect v-model="v$.DepartmentId.$model" :options="resultDepartment" optionValue="Id" optionLabel="Definition"
+                       :class="{'p-invalid':v$.DepartmentId.$invalid && submitted}" />
+          <small class="p-error" v-if="(v$.DepartmentId.$invalid && submitted)">Departman Boş Bırakılamaz.</small>
+        </div>
+      </div>
+
+      <div v-else>
+        <div class="field">
+          <label for="DepartmentId">Departman*</label>
+          <Dropdown v-model="v$.DepartmentId.$model" :options="resultDepartment" optionValue="Id" optionLabel="Definition"
+                    :class="{'p-invalid':v$.DepartmentId.$invalid && submitted}"/>
+          <small class="p-error" v-if="(v$.DepartmentId.$invalid && submitted)">Departman Boş Bırakılamaz.</small>
+        </div>
+      </div>
 
 
-          <div class="field">
-              <label for="RoleName">Rol*</label>
-              <Dropdown v-model="v$.RoleId.$model" :options="resultRole" optionValue="Id" optionLabel="Definition"
-                        :class="{'p-invalid':v$.RoleId.$invalid && submitted}"/>
-              <small class="p-error" v-if="(v$.RoleId.$invalid && submitted)">Rol Boş Bırakılamaz.</small>
+
+      <div class="field">
+        <label for="IsKeyUser">Anahtar Kullanıcı*</label>
+        <div class="card border-noround" :class="{'p-invalid':v$.IsKeyUser.$invalid && submitted}">
+          <div class="grid" >
+            <div class="col-3">
+              <RadioButton v-model="v$.IsKeyUser.$model" name="state.IsKeyUser" :value=1 />
+              <label for="IsKeyUser">Evet</label>
+            </div>
+            <div class="col-3">
+              <RadioButton  :value=0 name="state.IsKeyUser" v-model="v$.IsKeyUser.$model" />
+              <label for="IsKeyUser">Hayır</label>
+            </div>
           </div>
+        </div>
+        <small class="p-error" v-if="(v$.IsKeyUser.$invalid && submitted)">Anahtar Kullanıcı Durumunu Belirlemek Zorundasınız.</small>
+      </div>
 
-
-
-         <div class="field">
-            <label for="Password">Şifre*</label>
-            <Password id="password" v-model="v$.Password.$model" toggleMask :class="{'p-invalid':v$.RoleId.$invalid && submitted}">
-              <template #footer>
-
-                <ul class="p-pl-2 p-ml-2 p-mt-0" style="line-height: 1.5">
-                  <li>En az bir küçük harf</li>
-                  <li>En az bir büyük harf</li>
-                  <li>En az bir  rakam</li>
-                  <li>Minimum 8 karakter</li>
-                </ul>
-              </template>
-            </Password>
-           <small class="p-error" v-if="(v$.Password.$invalid&&submitted)">Parola Boş Bırakılamaz.</small>
+      <div class="field">
+        <label for="IsVisible">Tüm Talebler Görünsünmü*</label>
+        <div class="card border-noround" :class="{'p-invalid':v$.IsVisible.$invalid && submitted}">
+          <div class="grid" >
+            <div class="col-3">
+              <RadioButton v-model="v$.IsVisible.$model" name="state.IsKeyUser" :value=1 />
+              <label for="IsVisible">Evet</label>
+            </div>
+            <div class="col-3">
+              <RadioButton  :value=0 name="state.IsKeyUser" v-model="v$.IsVisible.$model" />
+              <label for="IsVisible">Hayır</label>
+            </div>
           </div>
-          <Button label="Kaydet" icon="pi pi-check" class="p-button-success p-button-outlined mb-2"  type="Submit"/>
-            <Button label="İptal" icon="pi pi-times" class="p-button-danger p-button-outlined" @click="closeDialog"/>
-          </form>
-    </Dialog>
+        </div>
+        <small class="p-error" v-if="(v$.IsKeyUser.$invalid && submitted)">Taleblerin Görünebilirliğini Belirlemek Zorundasınız.</small>
+      </div>
+
+
+      <div class="field">
+        <label for="RoleName">Rol*</label>
+        <Dropdown v-model="v$.RoleId.$model" :options="resultRole" optionValue="Id" optionLabel="Definition"
+                  :class="{'p-invalid':v$.RoleId.$invalid && submitted}"/>
+        <small class="p-error" v-if="(v$.RoleId.$invalid && submitted)">Rol Boş Bırakılamaz.</small>
+      </div>
+
+
+
+      <div class="field">
+        <label for="Password">Şifre*</label>
+        <Password id="password" v-model="v$.Password.$model" toggleMask :class="{'p-invalid':v$.RoleId.$invalid && submitted}">
+          <template #footer>
+
+            <ul class="p-pl-2 p-ml-2 p-mt-0" style="line-height: 1.5">
+              <li>En az bir küçük harf</li>
+              <li>En az bir büyük harf</li>
+              <li>En az bir  rakam</li>
+              <li>Minimum 8 karakter</li>
+            </ul>
+          </template>
+        </Password>
+        <small class="p-error" v-if="(v$.Password.$invalid&&submitted)">Parola Boş Bırakılamaz.</small>
+      </div>
+      <Button label="Kaydet" icon="pi pi-check" class="p-button-success p-button-outlined mb-2"  type="Submit"/>
+      <Button label="İptal" icon="pi pi-times" class="p-button-danger p-button-outlined" @click="closeDialog"/>
+    </form>
+  </Dialog>
 
 </template>
 
@@ -132,14 +162,13 @@ export default {
   setup(props){
     onMounted(  async ()=>{
       await UsersService.getRole().then(response =>{
-       resultRole.value= response.Payload
-    })
-     await UsersService.getDepartment().then(response =>{
-       resultDepartment.value= response.Payload
-    })
+        resultRole.value= response.Payload
+      })
+      await UsersService.getDepartment().then(response =>{
+        resultDepartment.value= response.Payload
+      })
       if(props.operation === 1)
         return;
-
       if(!props.userId)
         return;
       await UsersService.getUser(props.userId).then(response=>{
@@ -155,34 +184,27 @@ export default {
           state.value.IsKeyUser = 0
         }
       })
-
-
     });
-
 
     const submitted=ref(false)
     const manager=ref()
     const toast=useToast()
+    const resultRole=ref([])
+    const resultDepartment=ref([])
+
+
 
     const state = ref({
-        Id:null,
-        FullName:'',
-        EmailAddress:'',
-        DepartmentId:'',
-        RoleId:'',
-        Password:'',
+      Id:null,
+      FullName:'',
+      EmailAddress:'',
+      DepartmentId:[],
+      RoleId:'',
+      Password:'',
       IsManager:'',
-      IsKeyUser:''
+      IsKeyUser:'',
+      IsVisible:''
     })
-
-
-    const resultRole=ref([
-
-    ])
-
-    const resultDepartment=ref([
-
-    ])
 
     const rules= {
       Id:{required},
@@ -192,14 +214,15 @@ export default {
       RoleId:{required},
       Password:{required},
       IsManager:{required},
-      IsKeyUser:{required}
+      IsKeyUser:{required},
+      IsVisible:{required}
     }
+
     const v$ = useVuelidate(rules,state)
-
-
 
     const saveUser= (isFormValid)=>{
       submitted.value = true;
+      console.log("state", state.value)
       if (!isFormValid){
         return
       }
@@ -212,31 +235,14 @@ export default {
             props.closeDialog(true)
         })
       }else{
-            UsersService.updateUser(state.value).then(response =>{
-              if (response.data.Success){
-                props.closeDialog(true)
-
-                toast.add({severity: 'success', summary: 'Kullanıcı Güncellendi', detail:'Başarılı' ,life:3000});
-              }
-            })
+        UsersService.updateUser(state.value).then(response =>{
+          if (response.data.Success){
+            props.closeDialog(true)
+            toast.add({severity: 'success', summary: 'Kullanıcı Güncellendi', detail:'Başarılı' ,life:3000});
           }
+        })
       }
-
-
-
-    // onMounted(() => {
-    //   if (props.operation===1)
-    //     return;
-    //     if (!props.userId)
-    //
-    //       return;
-    //
-    //     UsersService.getUserList(props.userId).then((response =>{
-    //       if (response.data.Success){
-    //         state.value=response.data.Payload;
-    //       }
-    //     }))
-    // })
+    }
 
     return{
       state,saveUser,v$,resultDepartment,resultRole,manager,submitted

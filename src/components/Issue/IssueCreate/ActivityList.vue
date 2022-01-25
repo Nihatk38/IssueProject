@@ -17,8 +17,8 @@
             <div class="flex align-items-center w-full">
               {{ activity.SubActivityTitle }}<span style="color: red"> *</span>
               <div class="flex-1 text-right">
-                <Button class="p-button-info p-button-outlined mr-1" icon="pi pi-copy"
-                        :disabled="status>0 && status<9 " @click.stop="copyActivity(activity)"/>
+                <Button class="p-button-info p-button-outlined mr-1" icon="pi pi-copy" v-tooltip.top="'Alternatif Akışı Kopyalamak İçin Tıklayınız.'"
+                        :disabled="status>0 && status<9 " @click.stop="copyActivity(activity) "/>
                 <Button v-if="activity.Type !== 1" class="p-button-danger p-button-outlined " icon="pi pi-times"
                         :disabled="status>0 && status<9 " @click.stop="deleteActivity(activity)"/>
               </div>

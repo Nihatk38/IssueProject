@@ -19,13 +19,13 @@
         Kayıt bulunamadı
       </template>
 
-      <Column field="LineNo" header="S.No">
+      <Column field="LineNo" header="S.No" :style="{minWidth:'50px'}">
 
         <template #body="{data}">
           {{ data.LineNo }}
         </template>
       </Column>
-      <Column field="Precondition" header="Ön Koşullar">
+      <Column field="Precondition" header="Ön Koşullar" :style="{  minWidth:'500px'}">
 
         <template #body="{data}">
           {{ data.Explanation }}
@@ -103,9 +103,12 @@ export default {
     ])
 
     const onRowContextMenu = (event) => {
-      if(props.status >0)
+      if(props.status >0 && props.status<9 ){
         return
-      cm.value.show(event.originalEvent);
+      }
+      else{
+        cm.value.show(event.originalEvent);
+      }
     };
 
     const openUpdateDialog = () => {

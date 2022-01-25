@@ -16,7 +16,7 @@
         Bir sonuç bulunamadı...
       </template>
 
-      <Column field="Id" header="Id" :style="{maxWidth:'30px'}">
+      <Column field="Id"   header="Id" class="text-center" :sortable="true" :style="{maxWidth:'30px'}">
         <template #body="{data}">
           {{ data.Id }}
         </template>
@@ -25,8 +25,15 @@
         </template>
       </Column>
 
-
-      <Column field="FullName" header="Ad Soyad" :style="{maxWidth: '80px'}">
+      <Column field="DepartmentName" header="Departman" :sortable="true" class="text-center" :style="{maxWidth:'70px'}">
+        <template #body="{data}">
+          {{ data.DepartmentName }}
+        </template>
+        <template #filter="{filterModel}">
+          <InputText type="text" v-model="filterModel.value" class="p-column-filter"/>
+        </template>
+      </Column>
+      <Column field="FullName" header="Ad Soyad" :sortable="true" class="text-center" :style="{maxWidth: '80px'}">
         <template #body="{data}">
           {{ data.FullName }}
         </template>
@@ -34,15 +41,7 @@
           <InputText type="text" v-model="filterModel.value" class="p-column-filter"/>
         </template>
       </Column>
-      <Column field="Summary" header="Kısa Açıklama" :style="{maxWidth: '300px'}">
-        <template #body="{data}">
-          {{ data.Summary }}
-        </template>
-        <template #filter="{filterModel}">
-          <InputText type="text" v-model="filterModel.value" class="p-column-filter"/>
-        </template>
-      </Column>
-      <Column field="Title" header="Konu" :style="{maxWidth: '70px'}">
+      <Column field="Title" header="Konu" :sortable="true" class="text-center" :style="{maxWidth: '100px'}">
         <template #body="{data}">
           {{ data.Title }}
         </template>
@@ -50,7 +49,15 @@
           <InputText type="text" v-model="filterModel.value" class="p-column-filter"/>
         </template>
       </Column>
-      <Column field="statusText" header="Durum" :style="{maxWidth:'70px'}">
+      <Column field="Summary" header="Kısa Açıklama" :sortable="true" :style="{maxWidth: '250px'}">
+        <template #body="{data}">
+          {{ data.Summary }}
+        </template>
+        <template #filter="{filterModel}">
+          <InputText type="text" v-model="filterModel.value" class="p-column-filter"/>
+        </template>
+      </Column>
+      <Column field="statusText" header="Durum"   :sortable="true" :style="{maxWidth:'70px'}">
         <template #body="{data}">
           <span :class="'Issue status-' + data.status" class="ml-3">{{ data.statusText }}</span>
         </template>
@@ -143,7 +150,9 @@ export default {
                 FullName: data.FullName,
                 status: data.Status,
                 statusText: Functions.statusControl(data.Status),
-                Title: data.Title
+                Title: titleControl(data.Title),
+                CheckCommit:data.CheckCommit,
+                UserId:data.UserId
               }
 
             })
@@ -187,6 +196,15 @@ export default {
       })
 
     }
+    const titleControl = (data) =>{
+      if(data.length>20){
+        let result = data.substring(0, 20);
+        return result + "..."
+      }else{
+        return data;
+      }
+
+    }
     const summaryControl = (data) =>{
       if(data.length>100){
         let result = data.substring(0, 100);
@@ -201,7 +219,8 @@ export default {
         name: 'issueCreate',
         path: '/issueCreate',
         params: {data: selected.value.Id, constStatus: selected.value.status,nameData:selected.value.FullName,comingName:selected.value.FullName
-          ,comingDepartment:selected.value.DepartmentName,comingRole:selected.value.RoleName,activeIndex:props.activeIndex}
+          ,comingDepartment:selected.value.DepartmentName,comingRole:selected.value.RoleName,status: selected.value.status,
+          activeIndex:props.activeIndex,CheckCommit:selected.value.CheckCommit,UserId:selected.value.UserId}
       })
     }
     watch(() => selected.value, (value) => {

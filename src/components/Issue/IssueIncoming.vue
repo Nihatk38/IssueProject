@@ -1,6 +1,5 @@
 <template>
   <div>
-    <TabPanel header="">
       <DataTable class="p-treetable-sm" :value="comingList" dataKey="Id"
                  v-model:selection="selected" selection-mode="single"
                  v-model:contextMenuSelection="selected"
@@ -16,7 +15,7 @@
           Bir sonuç bulunamadı...
         </template>
 
-        <Column field="Id" header="Id" :sortable="true" :style="{maxWidth:'30px'}">
+        <Column field="Id" header="Id" :sortable="true" class="text-center" :style="{maxWidth:'30px'}">
           <template #body="{data}">
             {{ data.Id }}
           </template>
@@ -25,7 +24,7 @@
           </template>
         </Column>
 
-        <Column field="DepartmentName" header="Departman" :style="{maxWidth:'90px'}">
+        <Column field="DepartmentName" header="Departman" class="text-center" :sortable="true" :style="{maxWidth:'70px'}">
           <template #body="{data}">
             {{ data.DepartmentName }}
           </template>
@@ -34,7 +33,7 @@
           </template>
         </Column>
 
-        <Column field="FullName" header="Ad Soyad" :style="{maxWidth: '100px'}">
+        <Column field="FullName" header="Ad Soyad" class="text-center" :sortable="true" :style="{maxWidth: '80px'}">
           <template #body="{data}">
             {{ data.FullName }}
           </template>
@@ -42,15 +41,7 @@
             <InputText type="text" v-model="filterModel.value" class="p-column-filter"/>
           </template>
         </Column>
-        <Column field="Summary" header="Kısa Açıklama" :style="{maxWidth: '250px'}">
-          <template #body="{data}">
-            {{ data.Summary }}
-          </template>
-          <template #filter="{filterModel}">
-            <InputText type="text" v-model="filterModel.value" class="p-column-filter"/>
-          </template>
-        </Column>
-        <Column field="Title" header="Konu" :style="{maxWidth: '70px'}">
+        <Column field="Title" header="Konu" :sortable="true" :style="{maxWidth: '70px'}">
           <template #body="{data}">
             {{ data.Title }}
           </template>
@@ -58,8 +49,15 @@
             <InputText type="text" v-model="filterModel.value" class="p-column-filter"/>
           </template>
         </Column>
-
-        <Column field="statusText" header="Durum" :style="{maxWidth:'100px'}">
+        <Column field="Summary" header="Kısa Açıklama" :sortable="true" :style="{maxWidth: '250px'}">
+          <template #body="{data}">
+            {{ data.Summary }}
+          </template>
+          <template #filter="{filterModel}">
+            <InputText type="text" v-model="filterModel.value" class="p-column-filter"/>
+          </template>
+        </Column>
+        <Column field="statusText" header="Durum" :sortable="true"   :style="{maxWidth:'70px'}">
           <template #body="{data}">
             <span :class="'Issue status-' + data.status" class="ml-3">{{ data.statusText }}</span>
           </template>
@@ -73,7 +71,7 @@
 
       <ContextMenu :model="menuModel" ref="cm"/>
 
-    </TabPanel>
+
   </div>
 </template>
 
@@ -109,7 +107,6 @@ export default {
       IssuesService.getIssueListPublic().then(response => {
         if (!response.Success)
           return
-        console.log("response",response.Payload)
         comingList.value = response.Payload
             .map((data) => {
               return {
@@ -121,7 +118,9 @@ export default {
                 DepartmentId: data.DepartmentId,
                 status: data.Status,
                 statusText: Functions.statusControl(data.Status),
-                Title: titleControl(data.Title)
+                Title: titleControl(data.Title),
+                CheckCommit:data.CheckCommit,
+                UserId:data.UserId
               }
             })
 
@@ -148,8 +147,8 @@ export default {
 
     }
     const titleControl = (data) =>{
-      if(data.length>15){
-        let result = data.substring(0, 15);
+      if(data.length>20){
+        let result = data.substring(0, 20);
         return result + "..."
       }else{
         return data;
@@ -161,7 +160,7 @@ export default {
         name: 'issueCreate',
         path: '/issueCreate',
         params: {data: selected.value.Id, status: selected.value.status,comingName:selected.value.FullName,
-          comingDepartment:selected.value.DepartmentName,comingRole:selected.value.RoleName}
+          comingDepartment:selected.value.DepartmentName,comingRole:selected.value.RoleName,CheckCommit:selected.value.CheckCommit,UserId:selected.value.UserId}
       })
     }
 
