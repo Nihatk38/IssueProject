@@ -25,7 +25,6 @@
             </div>
 
           </template>
-
           <ActivityInfo
               v-model:IssueActivityDetailInfos="activity.IssueActivityDetailInfos"
               :status="status"

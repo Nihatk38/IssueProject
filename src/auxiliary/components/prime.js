@@ -33,6 +33,7 @@ import AccordionTab from "primevue/accordiontab";
 import Checkbox from "primevue/checkbox";
 import FileUpload from 'primevue/fileupload';
 import Fieldset from 'primevue/fieldset';
+
 import Tooltip from "primevue/tooltip";
 import Ripple from "primevue/ripple";
 import BadgeDirective from "primevue/badgedirective";
@@ -91,6 +92,8 @@ export const prime = (app) => {
     });
     app.use(ToastService)
     app.use(ConfirmationService)
+
+    app.component('MultiSelect',MultiSelect);
 
     app.component('Fieldset', Fieldset);
     app.component('MultiSelect', MultiSelect);

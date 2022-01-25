@@ -10,6 +10,13 @@ const UsersService = {
             console.log(e)
         })
     },
+    getManagerList(){
+        return client().get("/api/manager/get").then(r=>{
+            return r.data
+        }).catch(e=>{
+            console.log(e)
+        })
+    },
 
     getRole() {
         return client().get(`/api/role/get`).then(r => {

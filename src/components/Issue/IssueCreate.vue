@@ -1,5 +1,5 @@
 <template>
-    <div v-if="IssueInfo.Status >0 && IssueInfo.VersionNo>0" class="p-3">
+    <div v-if="versionBar" class="p-3">
         <Dropdown class="dr-solid border-1 border-round text-center  p-dropdown-trigger mb-2 "
                   v-model="versionInfo" :options="resultVersion"  optionValue="Id" optionLabel="VersionNo" placeholder="Önceki Revizyonları İncele"/>
     </div>
@@ -221,6 +221,12 @@ export default {
         IsSaveWithConfirm: false
       }
     }
+    const versionBar=ref(false)
+
+
+
+
+
     const closeRejectDialog = () => {
       openRejectDialog.value = false
     }
@@ -244,6 +250,7 @@ export default {
             })
             console.log("version",response.data.Payload)
             maxVersionNo.value = Math.max.apply(Math, response.data.Payload.map(function(o) { return o.VersionNo; }))
+            versionBar.value=true
           }
         })
       }
@@ -454,6 +461,7 @@ export default {
 
 
     return {
+      versionBar,
       IssueInfo,
       v$,
       save,
