@@ -254,9 +254,9 @@ export default {
       router.push({
         name: 'issueCreate',
         path: '/issueCreate',
-        params: {data: selected.value.Id, constStatus: selected.value.status,nameData:selected.value.FullName,comingName:selected.value.FullName
+        params: {UserId:selected.value.UserId, data: selected.value.Id, constStatus: selected.value.status,nameData:selected.value.FullName,comingName:selected.value.FullName
           ,comingDepartment:selected.value.DepartmentName,comingRole:selected.value.RoleName,status: selected.value.status,
-          activeIndex:sendActiveIndexValue.value,CheckCommit:selected.value.CheckCommit,UserId:selected.value.UserId}
+          activeIndex:sendActiveIndexValue.value,CheckCommit:selected.value.CheckCommit}
       })
     }
     watch(() => selected.value, (value) => {

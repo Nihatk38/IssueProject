@@ -310,7 +310,7 @@ export default {
 
       if (!v$.value.$error) {
         IsLoading.value=true;
-        console.log("update",IssueInfo.value)
+
         if(IssueInfo.value.IssueRelevantDepartmentInfos.length != null && IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId){
             IssueInfo.value.IssueRelevantDepartmentInfos = IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId.map((m) => {
               return {
@@ -320,7 +320,6 @@ export default {
             })
 
         }
-        console.log("update2",IssueInfo.value)
        if(IssueInfo.value.IssueRoleInfos.length>0){
          IssueInfo.value.IssueRoleInfos = IssueInfo.value.IssueRoleInfos.map((m) => {
            return {
@@ -410,8 +409,7 @@ export default {
       IsLoading.value = true;
       IssuesService.getSelectedIssue(props.data).then(response => {
         if (response.data.Success) {
-          console.log("response.data.Payload",response.data.Payload)
-          console.log("ıssue1",IssueInfo.value)
+
           IssueInfo.value = response.data.Payload
 
 
