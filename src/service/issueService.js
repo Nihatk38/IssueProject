@@ -4,6 +4,12 @@ const IssuesService = {
     addIssue(issue) {
         return client().post(`api/issue/add`, issue)
     },
+    updateIssue(issue) {
+        return client().post(`api/issue/update`, issue)
+    },
+    revisionIssue(issue) {
+        return client().post(`api/issue/revision`, issue)
+    },
 
     getIssueListPrivate() {
         return client().get(`/api/issue/privateIssueList`).then(r => {

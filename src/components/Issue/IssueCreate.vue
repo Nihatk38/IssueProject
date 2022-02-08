@@ -1,5 +1,5 @@
 <template>
-    <div v-if="IssueInfo.Status >0 && IssueInfo.VersionNo>0" class="p-3">
+    <div v-if="IssueInfo.Status >0 &&  resultVersion.length>1" class="p-3">
         <Dropdown class="dr-solid border-1 border-round text-center  p-dropdown-trigger mb-2 "
                   v-model="versionInfo" :options="resultVersion"  optionValue="Id" optionLabel="VersionNo" placeholder="Önceki Revizyonları İncele"/>
     </div>
@@ -242,7 +242,7 @@ export default {
                 VersionNo:'Version ' + f.VersionNo
               }
             })
-            console.log("version",response.data.Payload)
+
             maxVersionNo.value = Math.max.apply(Math, response.data.Payload.map(function(o) { return o.VersionNo; }))
           }
         })
@@ -310,15 +310,17 @@ export default {
 
       if (!v$.value.$error) {
         IsLoading.value=true;
-
+        console.log("update",IssueInfo.value)
         if(IssueInfo.value.IssueRelevantDepartmentInfos.length != null && IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId){
             IssueInfo.value.IssueRelevantDepartmentInfos = IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId.map((m) => {
               return {
-                DepartmentId: m.Id
+                DepartmentId: m.Id,
+
               }
             })
 
         }
+        console.log("update2",IssueInfo.value)
        if(IssueInfo.value.IssueRoleInfos.length>0){
          IssueInfo.value.IssueRoleInfos = IssueInfo.value.IssueRoleInfos.map((m) => {
            return {
@@ -327,27 +329,74 @@ export default {
          })
        }
 
-        IssuesService.addIssue(IssueInfo.value)
-            .then(response => {
-              if (response.data.Success) {
-                ResetValue();
-                setTimeout(()=>{
-                  toast.add({severity: 'success', summary: 'Başarılı', detail: 'İş Kaydı Oluşturuldu', life: 3000});
-                },500)
+         if(props.data>0){
+           console.log(props.status)
+           if(props.status == 9){
+             IssuesService.revisionIssue(IssueInfo.value)
+                 .then(response => {
+                   if (response.data.Success) {
+                     ResetValue();
+                     setTimeout(()=>{
+                       toast.add({severity: 'success', summary: 'Başarılı', detail: 'Yeni Revizyon Oluşturuldu', life: 3000});
+                     },500)
+                     router.push('/issueList')
+                   } else {
+                     setTimeout(()=>{
+                       toast.add({severity: 'error', summary: 'Hata', detail: 'Beklenmedik Bir Hata Oluştu.Lütfen Daha Sonra Tekrar Deneyin.', life: 3000});
+                     },500)
+                   }
+                 }).catch(e => {
+               console.log(e)
+             }).finally(()=> {
+               IsLoading.value = false;
+             })
+           }else{
+             console.log("update3",IssueInfo.value)
+             IssuesService.updateIssue(IssueInfo.value)
+                 .then(response => {
+                   if (response.data.Success) {
+                     ResetValue();
+                     setTimeout(()=>{
+                       toast.add({severity: 'success', summary: 'Başarılı', detail: 'İş Kaydı Güncellendi', life: 3000});
+                     },500)
+                     router.push('/issueList')
+                   } else {
+                     setTimeout(()=>{
+                       toast.add({severity: 'error', summary: 'Hata', detail: 'Beklenmedik Bir Hata Oluştu.Lütfen Daha Sonra Tekrar Deneyin.', life: 3000});
+                     },500)
+                   }
+                 }).catch(e => {
+               console.log(e)
+             }).finally(()=> {
+               IsLoading.value = false;
+             })
+           }
 
-              } else {
-                setTimeout(()=>{
-                  toast.add({severity: 'error', summary: 'Hata', detail: 'Beklenmedik Bir Hata Oluştu.Lütfen Daha Sonra Tekrar Deneyin.', life: 3000});
-                },500)
+         }
+         else{
+           IssuesService.addIssue(IssueInfo.value)
+               .then(response => {
+                 if (response.data.Success) {
+                   ResetValue();
+                   setTimeout(()=>{
+                     toast.add({severity: 'success', summary: 'Başarılı', detail: 'İş Kaydı Oluşturuldu', life: 3000});
 
-              }
-            }).catch(e => {
-          console.log(e)
-        }).finally(()=> {
-          IsLoading.value = false;
-          router.push('/issueList')
+                   },500)
+                   router.push('/issueList')
 
-        })
+                 } else {
+                   setTimeout(()=>{
+                     toast.add({severity: 'error', summary: 'Hata', detail: 'Beklenmedik Bir Hata Oluştu.Lütfen Daha Sonra Tekrar Deneyin.', life: 3000});
+                   },500)
+
+                 }
+               }).catch(e => {
+             console.log(e)
+           }).finally(()=> {
+             IsLoading.value = false;
+           })
+         }
+
       }else {
         window.scrollTo(0, 0);
         IssueInfo.value.IsSaveWithConfirm = false
@@ -361,15 +410,23 @@ export default {
       IsLoading.value = true;
       IssuesService.getSelectedIssue(props.data).then(response => {
         if (response.data.Success) {
-
+          console.log("response.data.Payload",response.data.Payload)
+          console.log("ıssue1",IssueInfo.value)
           IssueInfo.value = response.data.Payload
+
+
+          console.log("ıssue",IssueInfo.value)
           IssueInfo.value.Status = functions.statusCheck(IssueInfo.value.Status)
            IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId = response.data.Payload.IssueRelevantDepartmentInfos.map(f => {
-             return {
-               Definition: f.Department.Definition,
-               Id: f.DepartmentId
-             }
-           })
+            return {
+              Definition: f.Department.Definition,
+              Id: f.DepartmentId,
+
+            }
+          })
+
+
+              console.log("ıssue3",IssueInfo.value)
           IssueInfo.value.IssueRoleInfos = response.data.Payload.IssueRoleInfos.map(f => {
             return {
               Id: f.Role.Id,
@@ -388,8 +445,8 @@ export default {
         IssuesService.getSelectedIssue(value).then(response => {
           if (response.data.Success) {
             IssueInfo.value = response.data.Payload
+
             IssueInfo.value.Status = functions.statusCheck(IssueInfo.value.Status)
-            console.log("statu",IssueInfo.value.Status)
             toast.add({severity: 'info',  detail: IssueInfo.value.VersionNo +' Numaralı Revizyon Bilgileri Getirildi.Lütfen Revizyon Bilgilerini İnceleyin.', life: 5000});
             IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId = response.data.Payload.IssueRelevantDepartmentInfos.map(f => {
               return {

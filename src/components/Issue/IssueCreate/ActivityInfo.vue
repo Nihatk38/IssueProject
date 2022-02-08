@@ -43,11 +43,12 @@
 
 
   </TreeTable>
-
+{{selectedNode}}
   <ContextMenu :model="menuModel" ref="cm"/>
 
 
-  <Dialog v-model:visible="createActivityDialog" :modal="true" :style="{width: '800px'}" :visible="true" header="Yeni Akış Oluştur"
+  <Dialog v-model:visible="createActivityDialog" :modal="true" :style="{width: '800px'}" :visible="true"
+          header="Yeni Akış Oluştur"
           class="p-fluid">
 
     <div class="p-field mb-4 max-w-screen">
@@ -116,6 +117,7 @@ export default {
     const selectedNode = ref(null)
     const parentNode = ref(null)
     const activity = ref({
+      Id: 0,
       Definition: ".",
       RoleId: ".",
       Medium: "",
@@ -165,6 +167,7 @@ export default {
           {
             key: detail.LineNo,
             data: {
+              Id: detail.Id,
               Index: detail.Index,
               LineNo: detail.LineNo,
               Definition: detail.Definition,

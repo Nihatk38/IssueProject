@@ -7,7 +7,6 @@
               label="Ön Koşul Ekle" :disabled="status >0 && status <9"/>
     </div>
 
-
     <DataTable :value="preconditionList"
                dataKey="LineNo" selectionMode="single"
                v-model:selection="selectedPrecondition"

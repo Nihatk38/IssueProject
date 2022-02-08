@@ -4,7 +4,7 @@
     <template #title>
       <div class="grid">
         <div class="field col-12 md:col-4" >
-          <span class="md:font-normal" v-if="data != null">#{{comingInfo[0].Id}}</span>
+          <span class="md:font-normal" v-if="data != null">#{{scenariosValue.Id}}</span>
         </div>
         <div class=" field col-12 md:col-4">
           <h5 class="text-center">SENARYO BİLGİLERİ</h5>

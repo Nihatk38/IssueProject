@@ -8,6 +8,7 @@
     <div>
 <!--      <div  v-if="(v$.DepartmentId.$invalid && submitted  )" class="p-error mb-2">İlgili Departman Bilgisi Boş Bırakılamaz.</div>-->
       </div>
+    {{departmentValue}}
       <div class="grid">
         <div v-for="category of departmentList" :key="category.Definition" class="col-4 p-field-checkbox">
           <Checkbox :id="category.Definition" name="category" :value="category"

@@ -10,6 +10,7 @@
           Boş Bırakılamaz.
         </div>-->
     <div class="p-card-body">
+
       <Accordion :activeIndex="accordionIndex" :multiple="false">
         <AccordionTab v-for="activity in IssueActivityInfos" :key="activity.SubActivityNo"
                       class="justify-content-between">
@@ -105,13 +106,38 @@ export default {
     };
 
     const copyActivity = (activity) => {
+      console.log("activity",activity)
       const newActivity = {...activity, Id: 0, Type: 2};
+      newActivity.IssueActivityDetailInfos = activityDetailCopy(newActivity,null,activity.IssueActivityDetailInfos)
+
       IssueActivityInfos.value.push(newActivity);
+
       reorderActivityNo();
 
       accordionIndex.value++;
     };
+    const activityDetailCopy =(activity,parentNode,nodes)=>{
+    const details = []
+    nodes.forEach(x=>{
+      const detail = {
+        Id:0,
+        LineNo : x.LineNo,
+        Definition : x.Definition,
+        RoleId :x.RoleId,
+        Medium : x.Medium,
+        Explanation : x.Explanation,
+      }
+      if (x.IssueActivityDetailInfos != null)
+      {
+        if (x.IssueActivityDetailInfos.length > 0)
+          detail.IssueActivityDetailInfos = activityDetailCopy(activity, detail, x.IssueActivityDetailInfos);
+      }
 
+      details.push(detail);
+    })
+      console.log("details",details)
+      return details;
+    }
     const deleteActivity = (activity) => {
       confirm.require({
         message: "Akışı silmek isteediğinizden emin misiniz?",
