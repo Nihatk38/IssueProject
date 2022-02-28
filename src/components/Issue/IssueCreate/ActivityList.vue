@@ -18,7 +18,8 @@
             <div class="flex align-items-center w-full">
               {{ activity.SubActivityTitle }}<span style="color: red"> *</span>
               <div class="flex-1 text-right">
-                <Button class="p-button-info p-button-outlined mr-1" icon="pi pi-copy" v-tooltip.top="'Alternatif Akışı Kopyalamak İçin Tıklayınız.'"
+                <Button class="p-button-info p-button-outlined mr-1" icon="pi pi-copy"
+                        v-tooltip.top="'Alternatif Akışı Kopyalamak İçin Tıklayınız.'"
                         :disabled="status>0 && status<9 " @click.stop="copyActivity(activity) "/>
                 <Button v-if="activity.Type !== 1" class="p-button-danger p-button-outlined " icon="pi pi-times"
                         :disabled="status>0 && status<9 " @click.stop="deleteActivity(activity)"/>
@@ -105,9 +106,9 @@ export default {
     };
 
     const copyActivity = (activity) => {
-      console.log("activity",activity)
+      console.log("activity", activity)
       const newActivity = {...activity, Id: 0, Type: 2};
-      newActivity.IssueActivityDetailInfos = activityDetailCopy(newActivity,null,activity.IssueActivityDetailInfos)
+      newActivity.IssueActivityDetailInfos = activityDetailCopy(newActivity, null, activity.IssueActivityDetailInfos)
 
       IssueActivityInfos.value.push(newActivity);
 
@@ -115,26 +116,26 @@ export default {
 
       accordionIndex.value++;
     };
-    const activityDetailCopy =(activity,parentNode,nodes)=>{
-    const details = []
-    nodes.forEach(x=>{
-      const detail = {
-        Id:0,
-        LineNo : x.LineNo,
-        Definition : x.Definition,
-        RoleId :x.RoleId,
-        Medium : x.Medium,
-        Explanation : x.Explanation,
-      }
-      if (x.IssueActivityDetailInfos != null)
-      {
-        if (x.IssueActivityDetailInfos.length > 0)
-          detail.IssueActivityDetailInfos = activityDetailCopy(activity, detail, x.IssueActivityDetailInfos);
-      }
 
-      details.push(detail);
-    })
-      console.log("details",details)
+    const activityDetailCopy = (activity, parentNode, nodes) => {
+      const details = []
+      nodes.forEach(x => {
+        const detail = {
+          Id: 0,
+          LineNo: x.LineNo,
+          Definition: x.Definition,
+          RoleId: x.RoleId,
+          Medium: x.Medium,
+          Explanation: x.Explanation,
+        }
+        if (x.IssueActivityDetailInfos != null) {
+          if (x.IssueActivityDetailInfos.length > 0)
+            detail.IssueActivityDetailInfos = activityDetailCopy(activity, detail, x.IssueActivityDetailInfos);
+        }
+
+        details.push(detail);
+      })
+      console.log("details", details)
       return details;
     }
     const deleteActivity = (activity) => {

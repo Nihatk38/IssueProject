@@ -9,9 +9,9 @@
       Kayıt bulunamadı
     </template>
 
-    <Column headerStyle="width:16px"  :expander="true" field="LineNo" header="Sıra No">
+    <Column headerStyle="width:16px" :expander="true" field="LineNo" header="Sıra No">
       <template #body="data">
-        {{ data.node.data.LineNo }}
+        {{ removeLeadingZeros(data.node.data.LineNo) }}
       </template>
     </Column>
 
@@ -22,13 +22,13 @@
       </template>
     </Column>
 
-    <Column headerStyle="width:16px"  field="RoleId" header="Rol">
+    <Column headerStyle="width:16px" field="RoleId" header="Rol">
       <template #body="data">
         {{ resultRoles.find(role => role.Id === data.node.data.RoleId)?.Definition ?? "" }}
       </template>
     </Column>
 
-    <Column  headerStyle="width:16px" field="Medium" header="Ortam">
+    <Column headerStyle="width:16px" field="Medium" header="Ortam">
       <template #body="data">
         {{ data.node.data.Medium }}
 
@@ -43,7 +43,7 @@
 
 
   </TreeTable>
-{{selectedNode}}
+  
   <ContextMenu :model="menuModel" ref="cm"/>
 
 
@@ -59,7 +59,7 @@
     </div>
 
     <div class="p-field mb-4">
-            <label for="RoleId">Rol</label>
+      <label for="RoleId">Rol</label>
       <Dropdown v-model="v$.RoleId.$model" :options="resultRoles" optionLabel="Definition" optionValue="Id"
                 placeholder="Rol Seçiniz."
                 :class="{'p-invalid':v$.RoleId.$invalid && submitted}"/>
@@ -135,7 +135,6 @@ export default {
     const rules = {
       Definition: {required},
       RoleId: {required},
-
     }
 
     const v$ = useVuelidate(rules, activity)
@@ -161,7 +160,7 @@ export default {
     function fillDetails(detail, lineNo, subLineNo) {
 
       detail.Index = ++nodeIndex;
-      detail.LineNo = lineNo + (subLineNo > 0 ? '.' + subLineNo.toString() : '');
+      detail.LineNo = lineNo.padStart(3, '0') + (subLineNo > 0 ? '.' + subLineNo.toString().padStart(3, '0') : '');
 
       let newDetail =
           {
@@ -273,8 +272,9 @@ export default {
     };
 
     const findParent = (parent, index) => {
-      if (parent.Index === index)
+      if (parent.Index === index) {
         return parent;
+      }
 
       for (let i = 0; i < parent.IssueActivityDetailInfos.length; i++) {
         const child = parent.IssueActivityDetailInfos[i];
@@ -283,8 +283,13 @@ export default {
           return parent;
         }
 
-        if (child.IssueActivityDetailInfos.length > 0)
-          return findParent(child, index);
+        if (child.IssueActivityDetailInfos.length === 0) {
+          return null;
+        } else {
+          const parentFromChild = findParent(child, index);
+          if (parentFromChild !== null)
+            return parentFromChild;
+        }
       }
     }
 
@@ -367,10 +372,12 @@ export default {
 
         for (let i = 0; i < detailsInfo.length; i++) {
           const detail = detailsInfo[i];
+
           foundParent = findParent(detail, selectedNode.value.data.Index);
           if (foundParent)
             break;
         }
+        console.log(foundParent);
 
         if (foundParent) {
           foundParent.IssueActivityDetailInfos.splice(foundParent.IssueActivityDetailInfos.indexOf(foundItem), 1, {
@@ -485,12 +492,11 @@ export default {
     }
 
     const onRowContextMenu = (event) => {
-      if (props.status === 0 || props.status === 9 || props.status == null || props.status == 'Rejected'){
+      if (props.status === 0 || props.status === 9 || props.status == null || props.status == 'Rejected') {
         cm.value.show(event)
-      } else{
+      } else {
         return
       }
-
 
 
     }
@@ -500,6 +506,20 @@ export default {
     const onNodeUnselect = () => {
       selectedNode.value = null;
     }
+
+    const removeLeadingZeros = (value) => {
+      const values = value.split(".");
+
+      let newValue = "";
+      values.forEach(val => {
+        newValue += val.replace(/^0+/, "") + "."
+      })
+
+      newValue = newValue.replace(/.\s*$/, "");
+
+      return newValue;
+    }
+
 
     onMounted(async () => {
       await UsersService.getRole()
@@ -530,7 +550,9 @@ export default {
       updateSelected,
       updateButton,
       cancelButton,
-      selectedNode
+      selectedNode,
+
+      removeLeadingZeros
     }
   }
 }

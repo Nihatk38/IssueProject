@@ -1,15 +1,16 @@
 <template>
-    <div v-if="IssueInfo.Status >0 &&  resultVersion.length>1" class="p-3">
-        <Dropdown class="dr-solid border-1 border-round text-center  p-dropdown-trigger mb-2 "
-                  v-model="versionInfo" :options="resultVersion"  optionValue="Id" optionLabel="VersionNo" placeholder="Önceki Revizyonları İncele"/>
-    </div>
-<Dialog :content-style="' background-color: rgba(0, 0, 0, 0.1);'
- " :visible="IsLoading" :modal="true"   :show-header="false" >
-  <p class="m-auto mt-2">Yükleniyor..</p>
-  <div class="m-auto w-full">
-    <ProgressSpinner  ></ProgressSpinner>
+  <div v-if="IssueInfo.Status >0 &&  resultVersion.length>1" class="p-3">
+    <Dropdown class="dr-solid border-1 border-round text-center  p-dropdown-trigger mb-2 "
+              v-model="versionInfo" :options="resultVersion" optionValue="Id" optionLabel="VersionNo"
+              placeholder="Önceki Revizyonları İncele"/>
   </div>
-</Dialog>
+  <Dialog :content-style="' background-color: rgba(0, 0, 0, 0.1);'
+ " :visible="IsLoading" :modal="true" :show-header="false">
+    <p class="m-auto mt-2">Yükleniyor..</p>
+    <div class="m-auto w-full">
+      <ProgressSpinner></ProgressSpinner>
+    </div>
+  </Dialog>
   <scenario-information
       :scenarios="IssueInfo"
       :submitted="submitted"
@@ -69,19 +70,27 @@
           Dosya Adı
         </div>
 
-        <div class="text-gray-500 mb-2 border-1 border-300 p-1 " v-for="file in IssueInfo.IssueAttachmentInfos" :key="file.UniqueName">
+        <div class="text-gray-500 mb-2 border-1 border-300 p-1 " v-for="file in IssueInfo.IssueAttachmentInfos"
+             :key="file.UniqueName">
           <div class="p-fluid grid">
             <div class="col-11 ">
-<!--          <span  v-if="data>0"><a target="_blank" :href="`file:///c://Project/Web/Resources/Files/${file.UniqueName}`">{{file.FileName}}</a></span>
-          <span  v-else><a  target="_blank" :href="`file:///c://Project/Web/Resources/temp/${file.UniqueName}`">{{file.FileName}}</a></span>-->
+              <!--          <span  v-if="data>0"><a target="_blank" :href="`file:///c://Project/Web/Resources/Files/${file.UniqueName}`">{{file.FileName}}</a></span>
+                        <span  v-else><a  target="_blank" :href="`file:///c://Project/Web/Resources/temp/${file.UniqueName}`">{{file.FileName}}</a></span>-->
 
-              <span v-if="data>0"><a  target="_blank" :href="`https://kavramsal.formsunger.com.tr/Resources/Files/${file.UniqueName}`">{{file.FileName}}</a></span>
-              <span v-else><a target="_blank" :href="`https://kavramsal.formsunger.com.tr/Resources/temp/${file.UniqueName}`">{{file.FileName}}</a></span>
+              <span v-if="data>0"><a target="_blank"
+                                     :href="`https://kavramsal.formsunger.com.tr/Resources/Files/${file.UniqueName}`">{{
+                  file.FileName
+                }}</a></span>
+              <span v-else><a target="_blank"
+                              :href="`https://kavramsal.formsunger.com.tr/Resources/temp/${file.UniqueName}`">{{
+                  file.FileName
+                }}</a></span>
             </div>
             <div class="col-1">
               <Button class=" w-5 text-white p-button p-button-danger text-center"
                       :disabled="(IssueInfo.Status>0 && IssueInfo.Status<9) || IsManager || nameData!=tokenInfo"
-                      @click="deleteFile(file.UniqueName)">X</Button>
+                      @click="deleteFile(file.UniqueName)">X
+              </Button>
             </div>
           </div>
 
@@ -108,31 +117,35 @@
         </Button>
       </router-link>
     </div>
-    <div v-if="IssueInfo.Status === 1 || IssueInfo.Status === 2 || IssueInfo.Status === 3 || IssueInfo.Status === 4 " class="col-10 grid ">
+    <div v-if="IssueInfo.Status === 1 || IssueInfo.Status === 2 || IssueInfo.Status === 3 || IssueInfo.Status === 4 "
+         class="col-10 grid ">
 
-        <div class="col-offset-8 col-2 p-fluid">
-          <Button v-if=" CheckCommit === 'true'" class="w-full p-button-success" label="Onayla"
-                  @click="answerIssue"/>
-        </div>
-        <div class="col-2 p-fluid">
-          <Button v-if=" CheckCommit === 'true'" class="w-full p-button-danger "
-                  label="Reddet"
-                  @click="rejectIssue"/>
-        </div>
+      <div class="col-offset-8 col-2 p-fluid">
+        <Button v-if=" CheckCommit === 'true'" class="w-full p-button-success" label="Onayla"
+                @click="answerIssue"/>
+      </div>
+      <div class="col-2 p-fluid">
+        <Button v-if=" CheckCommit === 'true'" class="w-full p-button-danger "
+                label="Reddet"
+                @click="rejectIssue"/>
+      </div>
 
 
     </div>
 
     <div v-else class="col-10 grid">
 
-        <div class="col-offset-8 col-2 p-fluid" v-if="maxVersionNo == IssueInfo.VersionNo  || status == 0 || status ==null">
-          <Button v-if=" (activeIndex != 1 && !IsManager) && (nameData == tokenInfo || data == null) "  class="w-full p-button-success " label="Kaydet" @click="save"/>
-        </div>
+      <div class="col-offset-8 col-2 p-fluid"
+           v-if="maxVersionNo == IssueInfo.VersionNo  || status == 0 || status ==null">
+        <Button v-if=" (activeIndex != 1 && !IsManager) && (nameData == tokenInfo || data == null) "
+                class="w-full p-button-success " label="Kaydet" @click="save"/>
+      </div>
 
-        <div class="col-2 p-fluid" v-if="maxVersionNo == IssueInfo.VersionNo  || status == 0 || status ==null">
-          <Button v-if=" (activeIndex != 1 && !IsManager) && (nameData == tokenInfo || data == null) "  class="w-full p-button-success p-button-outlined " label="Kaydet & Onayla"
-                  @click="saveAndConfirm"/>
-        </div>
+      <div class="col-2 p-fluid" v-if="maxVersionNo == IssueInfo.VersionNo  || status == 0 || status ==null">
+        <Button v-if=" (activeIndex != 1 && !IsManager) && (nameData == tokenInfo || data == null) "
+                class="w-full p-button-success p-button-outlined " label="Kaydet & Onayla"
+                @click="saveAndConfirm"/>
+      </div>
 
 
     </div>
@@ -169,7 +182,7 @@ import issueService from "@/service/issueService";
 import functions from "@/auxiliary/directive/functions";
 
 export default {
-  props: ['constStatus','data', 'nameData', 'comingName', 'comingDepartment', 'comingRole','activeIndex','CheckCommit','UserId','status'],
+  props: ['constStatus', 'data', 'nameData', 'comingName', 'comingDepartment', 'comingRole', 'activeIndex', 'CheckCommit', 'UserId', 'status'],
   components: {ActivityList, Precondition, RelevantDepartments, ScenarioInformation, Notes, IssueRejectDialog},
   setup(props) {
     const confirmModel = ref({
@@ -190,7 +203,7 @@ export default {
     const IsManager = ref(false);
     const IsVisible = ref(false);
     const fileUpload = ref(null)
-    const maxVersionNo=ref(null)
+    const maxVersionNo = ref(null)
     const rules = computed(() => {
       return {
         IssueRoleInfos: {required},
@@ -227,68 +240,72 @@ export default {
     IsManager.value = token.IsManager;
     IsVisible.value = token.IsVisible;
     ResetValue();
-      if(props.data !=null){
-        IssuesService.getVersionInfo(props.data).then( response => {
-          if(response.data.Payload == null){
-            resultVersion.value =[{
-              VersionNo:'Önceki Revizyon Bulunmamaktadır! '
-            }]
-            maxVersionNo.value =0
-          }
-          else{
-            resultVersion.value =  response.data.Payload.map(f=>{
-              return{
-                Id :f.Id,
-                VersionNo:'Version ' + f.VersionNo
-              }
-            })
+    if (props.data != null) {
+      IssuesService.getVersionInfo(props.data).then(response => {
+        if (response.data.Payload == null) {
+          resultVersion.value = [{
+            VersionNo: 'Önceki Revizyon Bulunmamaktadır! '
+          }]
+          maxVersionNo.value = 0
+        } else {
+          resultVersion.value = response.data.Payload.map(f => {
+            return {
+              Id: f.Id,
+              VersionNo: 'Version ' + f.VersionNo
+            }
+          })
 
-            maxVersionNo.value = Math.max.apply(Math, response.data.Payload.map(function(o) { return o.VersionNo; }))
-          }
-        })
-      }
+          maxVersionNo.value = Math.max.apply(Math, response.data.Payload.map(function (o) {
+            return o.VersionNo;
+          }))
+        }
+      })
+    }
 
 
-
-    const back = () =>{
+    const back = () => {
       router.push("/issueList")
     }
-    const v$ = useVuelidate(rules, computed(()=>IssueInfo.value))
+    const v$ = useVuelidate(rules, computed(() => IssueInfo.value))
     const tokenInfo = ref(AuthService.getFromTokenFullName());
 
     const onUpload = (e) => {
       let formData = new FormData();
       e.files.forEach((file) =>
-        formData.append('files',file)
+          formData.append('files', file)
       );
 
       issueService.uploadFile(formData)
-      .then((response) =>
-          {
-              if (!response.data.Success)
-                toast.add({severity: 'error', summary: 'Başarısız', detail: 'Dosya Yüklenemedi Lütfen Yüklemek İstediğiniz Dosyayı Kontrol Edin! ', life: 5000});
+          .then((response) => {
+                if (!response.data.Success)
+                  toast.add({
+                    severity: 'error',
+                    summary: 'Başarısız',
+                    detail: 'Dosya Yüklenemedi Lütfen Yüklemek İstediğiniz Dosyayı Kontrol Edin! ',
+                    life: 5000
+                  });
 
-              toast.add({severity: 'success', summary: 'Başarılı', detail: 'Dosya Eklendi ', life: 5000});
-              IssueInfo.value.IssueAttachmentInfos =  [...IssueInfo.value.IssueAttachmentInfos,...response.data.Payload];
-            fileUpload.value.clear();
-          }
-      );
+                toast.add({severity: 'success', summary: 'Başarılı', detail: 'Dosya Eklendi ', life: 5000});
+                IssueInfo.value.IssueAttachmentInfos = [...IssueInfo.value.IssueAttachmentInfos, ...response.data.Payload];
+                fileUpload.value.clear();
+              }
+          );
     }
 
     const saveAndConfirm = () => {
       IssueInfo.value.IsSaveWithConfirm = true
       save()
     }
-    const deleteFile = (fileInfo) =>{
+    const deleteFile = (fileInfo) => {
 
-      IssuesService.deleteFile(fileInfo,props.data == null ? 0:props.data).then(response =>{
-        if(response.data.Success){
+      IssuesService.deleteFile(fileInfo, props.data == null ? 0 : props.data).then(response => {
+        if (response.data.Success) {
 
-          IssueInfo.value.IssueAttachmentInfos.splice(findIndexByIdContact(fileInfo),1)
-          toast.add({severity:'warn',summary:'Başarılı',detail:'Dosya Silindi',life:3000})
+          IssueInfo.value.IssueAttachmentInfos.splice(findIndexByIdContact(fileInfo), 1)
+          toast.add({severity: 'warn', summary: 'Başarılı', detail: 'Dosya Silindi', life: 3000})
 
-        }else{
-          toast.add({severity:'error',summary:'Başarısız',detail:'Dosya Silinemedi',life:3000})
+        } else {
+          toast.add({severity: 'error', summary: 'Başarısız', detail: 'Dosya Silinemedi', life: 3000})
         }
       })
     }
@@ -309,97 +326,123 @@ export default {
       arrayErrors.value.length = (v$.value.$errors.length)
 
       if (!v$.value.$error) {
-        IsLoading.value=true;
+        IsLoading.value = true;
 
-        if(IssueInfo.value.IssueRelevantDepartmentInfos.length != null && IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId){
-            IssueInfo.value.IssueRelevantDepartmentInfos = IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId.map((m) => {
-              return {
-                DepartmentId: m.Id,
+        if (IssueInfo.value.IssueRelevantDepartmentInfos.length != null && IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId) {
+          IssueInfo.value.IssueRelevantDepartmentInfos = IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId.map((m) => {
+            return {
+              DepartmentId: m.Id,
 
-              }
-            })
+            }
+          })
 
         }
-       if(IssueInfo.value.IssueRoleInfos.length>0){
-         IssueInfo.value.IssueRoleInfos = IssueInfo.value.IssueRoleInfos.map((m) => {
-           return {
-             RoleId: m.Id
-           }
-         })
-       }
 
-         if(props.data>0){
-           console.log(props.status)
-           if(props.status == 9){
-             IssuesService.revisionIssue(IssueInfo.value)
-                 .then(response => {
-                   if (response.data.Success) {
-                     ResetValue();
-                     setTimeout(()=>{
-                       toast.add({severity: 'success', summary: 'Başarılı', detail: 'Yeni Revizyon Oluşturuldu', life: 3000});
-                     },500)
-                     router.push('/issueList')
-                   } else {
-                     setTimeout(()=>{
-                       toast.add({severity: 'error', summary: 'Hata', detail: 'Beklenmedik Bir Hata Oluştu.Lütfen Daha Sonra Tekrar Deneyin.', life: 3000});
-                     },500)
-                   }
-                 }).catch(e => {
-               console.log(e)
-             }).finally(()=> {
-               IsLoading.value = false;
-             })
-           }else{
-             console.log("update3",IssueInfo.value)
-             IssuesService.updateIssue(IssueInfo.value)
-                 .then(response => {
-                   if (response.data.Success) {
-                     ResetValue();
-                     setTimeout(()=>{
-                       toast.add({severity: 'success', summary: 'Başarılı', detail: 'İş Kaydı Güncellendi', life: 3000});
-                     },500)
-                     router.push('/issueList')
-                   } else {
-                     setTimeout(()=>{
-                       toast.add({severity: 'error', summary: 'Hata', detail: 'Beklenmedik Bir Hata Oluştu.Lütfen Daha Sonra Tekrar Deneyin.', life: 3000});
-                     },500)
-                   }
-                 }).catch(e => {
-               console.log(e)
-             }).finally(()=> {
-               IsLoading.value = false;
-             })
-           }
+        if (IssueInfo.value.IssueRoleInfos.length > 0) {
+          IssueInfo.value.IssueRoleInfos = IssueInfo.value.IssueRoleInfos.map((m) => {
+            console.log(m);
+            return {
+              RoleId: m.Id ?? m.RoleId
+            }
+          })
+        }
 
-         }
-         else{
-           IssuesService.addIssue(IssueInfo.value)
-               .then(response => {
-                 if (response.data.Success) {
-                   ResetValue();
-                   setTimeout(()=>{
-                     toast.add({severity: 'success', summary: 'Başarılı', detail: 'İş Kaydı Oluşturuldu', life: 3000});
+        if (props.data > 0) {
+          console.log(props.status)
+          if (props.status == 9) {
+            IssuesService.revisionIssue(IssueInfo.value)
+                .then(response => {
+                  if (response.data.Success) {
+                    ResetValue();
+                    setTimeout(() => {
+                      toast.add({
+                        severity: 'success',
+                        summary: 'Başarılı',
+                        detail: 'Yeni Revizyon Oluşturuldu',
+                        life: 3000
+                      });
+                    }, 500)
+                    router.push('/issueList')
+                  } else {
+                    setTimeout(() => {
+                      toast.add({
+                        severity: 'error',
+                        summary: 'Hata',
+                        detail: 'Beklenmedik Bir Hata Oluştu.Lütfen Daha Sonra Tekrar Deneyin.',
+                        life: 3000
+                      });
+                    }, 500)
+                  }
+                }).catch(e => {
+              console.log(e)
+            }).finally(() => {
+              IsLoading.value = false;
+            })
+          } else {
+            console.log("update3", IssueInfo.value)
+            IssuesService.updateIssue(IssueInfo.value)
+                .then(response => {
+                  if (response.data.Success) {
+                    ResetValue();
+                    setTimeout(() => {
+                      toast.add({severity: 'success', summary: 'Başarılı', detail: 'İş Kaydı Güncellendi', life: 3000});
+                    }, 500)
+                    router.push('/issueList')
+                  } else {
+                    setTimeout(() => {
+                      toast.add({
+                        severity: 'error',
+                        summary: 'Hata',
+                        detail: 'Beklenmedik Bir Hata Oluştu.Lütfen Daha Sonra Tekrar Deneyin.',
+                        life: 3000
+                      });
+                    }, 500)
+                  }
+                }).catch(e => {
+              console.log(e)
+            }).finally(() => {
+              IsLoading.value = false;
+            })
+          }
 
-                   },500)
-                   router.push('/issueList')
+        } else {
+          IssuesService.addIssue(IssueInfo.value)
+              .then(response => {
+                if (response.data.Success) {
+                  ResetValue();
+                  setTimeout(() => {
+                    toast.add({severity: 'success', summary: 'Başarılı', detail: 'İş Kaydı Oluşturuldu', life: 3000});
 
-                 } else {
-                   setTimeout(()=>{
-                     toast.add({severity: 'error', summary: 'Hata', detail: 'Beklenmedik Bir Hata Oluştu.Lütfen Daha Sonra Tekrar Deneyin.', life: 3000});
-                   },500)
+                  }, 500)
+                  router.push('/issueList')
 
-                 }
-               }).catch(e => {
-             console.log(e)
-           }).finally(()=> {
-             IsLoading.value = false;
-           })
-         }
+                } else {
+                  setTimeout(() => {
+                    toast.add({
+                      severity: 'error',
+                      summary: 'Hata',
+                      detail: 'Beklenmedik Bir Hata Oluştu.Lütfen Daha Sonra Tekrar Deneyin.',
+                      life: 3000
+                    });
+                  }, 500)
 
-      }else {
+                }
+              }).catch(e => {
+            console.log(e)
+          }).finally(() => {
+            IsLoading.value = false;
+          })
+        }
+
+      } else {
         window.scrollTo(0, 0);
         IssueInfo.value.IsSaveWithConfirm = false
-        toast.add({severity: 'error', summary: 'Hata', detail: 'İş Kaydı Oluşturulamadı.Lütfen Zorunlu Alanları Doldurun.', life: 3000});
+        toast.add({
+          severity: 'error',
+          summary: 'Hata',
+          detail: 'İş Kaydı Oluşturulamadı.Lütfen Zorunlu Alanları Doldurun.',
+          life: 3000
+        });
       }
 
     }
@@ -413,9 +456,9 @@ export default {
           IssueInfo.value = response.data.Payload
 
 
-          console.log("ıssue",IssueInfo.value)
+          console.log("ıssue", IssueInfo.value)
           IssueInfo.value.Status = functions.statusCheck(IssueInfo.value.Status)
-           IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId = response.data.Payload.IssueRelevantDepartmentInfos.map(f => {
+          IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId = response.data.Payload.IssueRelevantDepartmentInfos.map(f => {
             return {
               Definition: f.Department.Definition,
               Id: f.DepartmentId,
@@ -424,7 +467,7 @@ export default {
           })
 
 
-              console.log("ıssue3",IssueInfo.value)
+          console.log("ıssue3", IssueInfo.value)
           IssueInfo.value.IssueRoleInfos = response.data.Payload.IssueRoleInfos.map(f => {
             return {
               Id: f.Role.Id,
@@ -433,19 +476,23 @@ export default {
           })
         } else
           ResetValue();
-      }).finally(()=>{
+      }).finally(() => {
         IsLoading.value = false;
       })
     }
-    watch(()=>versionInfo.value,(value)=>{
-      if(value != null){
-        IsLoading.value=true;
+    watch(() => versionInfo.value, (value) => {
+      if (value != null) {
+        IsLoading.value = true;
         IssuesService.getSelectedIssue(value).then(response => {
           if (response.data.Success) {
             IssueInfo.value = response.data.Payload
 
             IssueInfo.value.Status = functions.statusCheck(IssueInfo.value.Status)
-            toast.add({severity: 'info',  detail: IssueInfo.value.VersionNo +' Numaralı Revizyon Bilgileri Getirildi.Lütfen Revizyon Bilgilerini İnceleyin.', life: 5000});
+            toast.add({
+              severity: 'info',
+              detail: IssueInfo.value.VersionNo + ' Numaralı Revizyon Bilgileri Getirildi.Lütfen Revizyon Bilgilerini İnceleyin.',
+              life: 5000
+            });
             IssueInfo.value.IssueRelevantDepartmentInfos.DepartmentId = response.data.Payload.IssueRelevantDepartmentInfos.map(f => {
               return {
                 Definition: f.Department.Definition,
@@ -460,7 +507,7 @@ export default {
             })
           } else
             ResetValue();
-        }).finally(()=>{
+        }).finally(() => {
           IsLoading.value = false;
         })
       }
@@ -484,24 +531,24 @@ export default {
         accept: () => {
           IssuesService.IssueConfirm(confirmModel.value).then(response => {
             if (response.Success) {
-              setTimeout(()=>{
+              setTimeout(() => {
                 toast.add({severity: 'success', summary: 'Onaylandı', detail: 'Başarılı', life: 3000});
-              },500)
+              }, 500)
             } else {
-              setTimeout(()=>{
+              setTimeout(() => {
                 toast.add({severity: 'error', summary: response.Information, detail: 'Başarısız', life: 5000});
-              },500)
+              }, 500)
 
             }
-          }).finally(()=>{
+          }).finally(() => {
             IsLoading.value = false;
             router.push('/issueList')
           })
         },
         reject: () => {
-          setTimeout(()=>{
+          setTimeout(() => {
             toast.add({severity: 'warn', summary: 'Onaylanamadı', detail: 'Başarısız', life: 3000});
-          },400)
+          }, 400)
 
         }
       })
@@ -541,8 +588,8 @@ export default {
 }
 </script>
 <style scoped>
-.dr-solid{
-   border:1px solid darkorange;
-    box-shadow: 2px 3px 5px rgba(0,0,0,.02), 0px 0px 2px rgba(0,0,0,.05), 0px 1px 4px rgba(0,0,0,.08);
+.dr-solid {
+  border: 1px solid darkorange;
+  box-shadow: 2px 3px 5px rgba(0, 0, 0, .02), 0px 0px 2px rgba(0, 0, 0, .05), 0px 1px 4px rgba(0, 0, 0, .08);
 }
 </style>
